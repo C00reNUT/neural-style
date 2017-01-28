@@ -4,6 +4,7 @@ import vgg
 
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib.opt.python.training import external_optimizer
 
 from sys import stderr
 
@@ -18,7 +19,7 @@ except NameError:
 
 def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon, pooling,
+        learning_rate, beta1, beta2, epsilon, pooling, use_lbfgs,
         print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
@@ -125,7 +126,63 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         loss = content_loss + style_loss + tv_loss
 
         # optimizer setup
-        train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
+        def iter_callback(data=None):
+            iter_callback.opt_iter += 1
+            stderr.write('Iteration %4d/%4d\n' % (iter_callback.opt_iter, iter_callback.max_iter))
+        iter_callback.opt_iter = 0
+        iter_callback.max_iter = iterations
+        
+        if use_lbfgs == 0:
+            train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
+        else:
+            # setting up L-BFGS iteration parameters
+            #   there are two iteration kinds: outer iteration (our loop) and inner iteration, or subiteration (the SciPy optimizer loop)
+            #   ideally, we don't want to split the internal subiteration loop, as this leads to loss of precision
+            #   hence in default case of L-BFGS we would want to have 1 our iteration and `iterations` subiterations
+            subiterations = iterations
+            if checkpoint_iterations:
+                stderr.write('WARNING: checkpoint_iterations is used with L-BFGS optimizer - this will decrease the precision\n')
+                stderr.write('      due to the need to split iteration seuqence to save intermediate image and show progress\n')
+                if checkpoint_iterations < 50:
+                    stderr.write('WARNING: checkpoint_iterations cannot be lower than 50 when using L-BFGS due to precision losses\n')
+                    checkpoint_iterations = 50
+                # we don't want to break up iteration sequence just for the statistics output
+                if print_iterations:
+                    stderr.write('WARNING: both checkpoint_iterations and print_iterations are set for L-BFGS, focring print_iterations=checkpoint_iterations\n')
+                    print_iterations = checkpoint_iterations
+                if subiterations > checkpoint_iterations:
+                    subiterations = checkpoint_iterations
+                
+            elif print_iterations:
+                stderr.write('WARNING: print_iterations is used with L-BFGS optimizer - this will decrease the precision\n')
+                stderr.write('      due to the need to split iteration seuqence to save intermediate image and show progress\n')
+                if print_iterations < 50:
+                    stderr.write('WARNING: print_iterations cannot be lower than 50 when using L-BFGS due to precision losses\n')
+                    print_iterations = 50
+                if subiterations > print_iterations:
+                    subiterations = print_iterations
+            
+            if subiterations != iterations and subiterations > iterations:
+                # subiterations number is limited, we need to get the total amount of L-BFGS subeterations as close to `iterations` as possible
+                iterations = iterations // subiterations + 1
+            else:
+                # subiterations number is unlimited, we only need one training iteration
+                iterations = 1
+            
+            iter_callback.max_iter = iterations * subiterations
+            
+            lbfgs_optimizer = external_optimizer.ScipyOptimizerInterface(loss, callback=iter_callback, options=
+                    {
+                        'disp': None,
+                        'maxls': 20,
+                        'iprint': -1,
+                        'gtol': 1e-05,
+                        'eps': 1e-08,
+                        'maxiter': subiterations,
+                        'ftol': 2.220446049250313e-09,
+                        'maxcor': 10,
+                        'maxfun': 15000
+                    })
 
         def print_progress():
             stderr.write('  content loss: %g\n' % content_loss.eval())
@@ -142,8 +199,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             if (print_iterations and print_iterations != 0):
                 print_progress()            
             for i in range(iterations):
-                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-                train_step.run()
+                if use_lbfgs == 0:
+                    train_step.run()
+                    iter_callback()
+                else:
+                    lbfgs_optimizer.minimize(sess)                
 
                 last_step = (i == iterations - 1)
                 if last_step or (print_iterations and i % print_iterations == 0):

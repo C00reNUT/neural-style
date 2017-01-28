@@ -29,6 +29,7 @@ ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 PRESERVE_COLORS = 0
 POOLING = 'max'
+USE_LBFGS = 0
 
 def build_parser():
     parser = ArgumentParser()
@@ -106,6 +107,9 @@ def build_parser():
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
+    parser.add_argument('--use-lbfgs', type=int,
+            dest='use_lbfgs', help='use L-BFGS optimizer - set iteration count to 1-10 as one iteration has subiterations (default %(default)s)',
+            metavar='USE_LBFGS', default=USE_LBFGS)
     return parser
 
 
@@ -176,6 +180,7 @@ def main():
         beta2=options.beta2,
         epsilon=options.epsilon,
         pooling=options.pooling,
+        use_lbfgs=options.use_lbfgs,
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations
     ):
