@@ -4,6 +4,7 @@ import vgg
 
 import tensorflow as tf
 import numpy as np
+import time
 from tensorflow.contrib.opt.python.training import external_optimizer
 
 from sys import stderr
@@ -128,7 +129,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         # optimizer setup
         def iter_callback(data=None):
             iter_callback.opt_iter += 1
-            stderr.write('Iteration %4d/%4d\n' % (iter_callback.opt_iter, iter_callback.max_iter))
+            stderr.write('Iteration %4d/%4d (%f)\n' % (iter_callback.opt_iter, iter_callback.max_iter, time.time()-iter_callback.time0))
+            iter_callback.time0 = time.time()
         iter_callback.opt_iter = 0
         iter_callback.max_iter = iterations
         
@@ -199,6 +201,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             if (print_iterations and print_iterations != 0):
                 print_progress()            
             for i in range(iterations):
+                iter_callback.time0 = time.time()
                 if use_lbfgs == 0:
                     train_step.run()
                     iter_callback()
