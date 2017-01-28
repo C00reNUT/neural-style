@@ -167,6 +167,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             if subiterations != iterations and subiterations > iterations:
                 # subiterations number is limited, we need to get the total amount of L-BFGS subeterations as close to `iterations` as possible
                 iterations = iterations // subiterations + 1
+                print_iterations = 1
+                checkpoint_iterations = 1
             else:
                 # subiterations number is unlimited, we only need one training iteration
                 iterations = 1
@@ -199,7 +201,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             sess.run(tf.initialize_all_variables())
             stderr.write('Optimization started..\n')
             if (print_iterations and print_iterations != 0):
-                print_progress()            
+                print_progress()
             for i in range(iterations):
                 iter_callback.time0 = time.time()
                 if use_lbfgs == 0:
