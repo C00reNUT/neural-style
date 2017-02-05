@@ -176,7 +176,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                 if subiterations > print_iterations:
                     subiterations = print_iterations
             
-            if subiterations != iterations and subiterations > iterations:
+            if subiterations != iterations and subiterations < iterations:
                 # subiterations number is limited, we need to get the total amount of L-BFGS subeterations as close to `iterations` as possible
                 iterations = iterations // subiterations + 1
                 print_iterations = 1
