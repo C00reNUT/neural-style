@@ -77,6 +77,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                 
     # make stylized image using backpropogation
     with tf.Graph().as_default():
+        global_step = tf.Variable(0, trainable=False)
         if initial is None:
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = tf.random_normal(shape) * 0.256
@@ -135,7 +136,18 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         iter_callback.max_iter = iterations
         
         if use_lbfgs == 0:
-            train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
+            # Sometimes Adam can benefit from the learning rate decay too, it can be visually noted when due to
+            # too large rmaining learning rate, at higher iterations picture could be transformed to a worse state
+            if False:
+                LEARNING_RATE_INITIAL = learning_rate
+                LEARNING_DECAY_STEPS = 10
+                LEARNING_DECAY_BASE = 0.98
+                learning_rate_decay = tf.train.exponential_decay(LEARNING_RATE_INITIAL,
+                        global_step, LEARNING_DECAY_STEPS, LEARNING_DECAY_BASE,
+                        staircase=True)
+                train_step = tf.train.AdamOptimizer(learning_rate_decay, beta1, beta2, epsilon).minimize(loss, global_step=global_step)        
+            else:
+                train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
         else:
             # setting up L-BFGS iteration parameters
             #   there are two iteration kinds: outer iteration (our loop) and inner iteration, or subiteration (the SciPy optimizer loop)
