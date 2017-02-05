@@ -206,6 +206,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             stderr.write('       tv loss: %g\n' % tv_loss.eval())
             stderr.write('    total loss: %g\n' % loss.eval())
 
+        opt_time = time.time()
+            
         # optimization
         best_loss = float('inf')
         best = None
@@ -235,7 +237,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                         vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
                     )
 
-
+        print("Optimization time: %fs" % (time.time() - opt_time))
+                    
 def _tensor_size(tensor):
     from operator import mul
     return reduce(mul, (d.value for d in tensor.get_shape()), 1)
