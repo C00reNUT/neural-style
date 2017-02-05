@@ -20,7 +20,7 @@ except NameError:
 
 def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon, pooling, use_lbfgs,
+        learning_rate, beta1, beta2, epsilon, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
@@ -135,7 +135,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         iter_callback.opt_iter = 0
         iter_callback.max_iter = iterations
         
-        if use_lbfgs == 0:
+        print("")
+        use_scipy_optimizer = False
+        if optimizer == 'adam':
+            print("Using TF Adam optimizer (%f)" % (learning_rate))
             # Sometimes Adam can benefit from the learning rate decay too, it can be visually noted when due to
             # too large rmaining learning rate, at higher iterations picture could be transformed to a worse state
             if False:
@@ -187,7 +190,19 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             
             iter_callback.max_iter = iterations * subiterations
             
-            lbfgs_optimizer = external_optimizer.ScipyOptimizerInterface(loss, callback=iter_callback, options=
+            use_scipy_optimizer = True
+            if optimizer == 'cg':
+                print("Using SciPy CG optimizer")
+                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='CG', callback=iter_callback, options=
+                    {
+                        'disp': None,
+                        'gtol': 1e-05,
+                        'eps': 1e-08,
+                        'maxiter': subiterations,
+                    })
+            else:
+                print("Using SciPy L-BFGS optimizer")
+                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='L-BFGS-B', callback=iter_callback, options=
                     {
                         'disp': None,
                         'maxls': 20,
@@ -217,11 +232,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             print_progress()
             for i in range(iterations):
                 iter_callback.time0 = time.time()
-                if use_lbfgs == 0:
+                if use_scipy_optimizer == 0:
                     train_step.run()
                     iter_callback()
                 else:
-                    lbfgs_optimizer.minimize(sess)                
+                    scipy_optimizer.minimize(sess)                
 
                 last_step = (i == iterations - 1)
                 if last_step or (print_iterations and i % print_iterations == 0):
