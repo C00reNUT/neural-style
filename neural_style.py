@@ -30,6 +30,7 @@ VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 PRESERVE_COLORS = 0
 POOLING = 'max'
 OPTIMIZER = 'lbfgs'
+CHECKPOINT_OUTPUT = 'checkpoint%04d.jpg'
 
 def build_parser():
     parser = ArgumentParser()
@@ -51,7 +52,7 @@ def build_parser():
             metavar='PRINT_ITERATIONS')
     parser.add_argument('--checkpoint-output',
             dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg',
-            metavar='OUTPUT')
+            metavar='OUTPUT', default=CHECKPOINT_OUTPUT)
     parser.add_argument('--checkpoint-iterations', type=int,
             dest='checkpoint_iterations', help='checkpoint frequency',
             metavar='CHECKPOINT_ITERATIONS')
@@ -158,7 +159,7 @@ def main():
         if options.initial_noiseblend < 1.0:
             initial = content_image
 
-    if options.checkpoint_output and "%s" not in options.checkpoint_output:
+    if options.checkpoint_output and ("%s" not in options.checkpoint_output and "%04d" not in options.checkpoint_output):
         parser.error("To save intermediate images, the checkpoint output "
                      "parameter must contain `%s` (e.g. `foo%s.jpg`)")
 
