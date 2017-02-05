@@ -9,6 +9,8 @@ from tensorflow.contrib.opt.python.training import external_optimizer
 
 from sys import stderr
 
+from PIL import Image
+
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
@@ -18,7 +20,7 @@ except NameError:
     from functools import reduce
 
 
-def stylize(network, initial, initial_noiseblend, content, styles, iterations,
+def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
@@ -39,17 +41,17 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
     vgg_weights, vgg_mean_pixel = vgg.load_net(network)
     
     layer_weight = 1.0
-    STYLE_LAYERS_WEIGHTS = {}
+    style_layers_weights = {}
     for style_layer in STYLE_LAYERS:
-        STYLE_LAYERS_WEIGHTS[style_layer] = layer_weight
+        style_layers_weights[style_layer] = layer_weight
         layer_weight *= style_layer_weight_exp
     
     # normalize style layer weights
     layer_weights_sum = 0
     for style_layer in STYLE_LAYERS:
-        layer_weights_sum += STYLE_LAYERS_WEIGHTS[style_layer]
+        layer_weights_sum += style_layers_weights[style_layer]
     for style_layer in STYLE_LAYERS:
-        STYLE_LAYERS_WEIGHTS[style_layer] /= layer_weights_sum
+        style_layers_weights[style_layer] /= layer_weights_sum
     
     # compute content features in feedforward mode
     g = tf.Graph()
@@ -90,14 +92,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
-        CONTENT_LAYERS_WEIGHTS = {}
-        CONTENT_LAYERS_WEIGHTS['relu4_2'] = content_weight_blend
-        CONTENT_LAYERS_WEIGHTS['relu5_2'] = 1.0 - content_weight_blend
+        content_layers_weights = {}
+        content_layers_weights['relu4_2'] = content_weight_blend
+        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
         
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
-            content_losses.append(CONTENT_LAYERS_WEIGHTS[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
                     content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
@@ -113,7 +115,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                 feats = tf.reshape(layer, (-1, number))
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
-                style_losses.append(STYLE_LAYERS_WEIGHTS[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
         # total variation denoising
@@ -247,9 +249,43 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                     if this_loss < best_loss:
                         best_loss = this_loss
                         best = image.eval()
+                    
+                    img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
+                    
+                    if preserve_colors and preserve_colors == True:
+                        original_image = np.clip(content, 0, 255)
+                        styled_image = np.clip(img_out, 0, 255)
+                        
+                        #The luminosity transfer steps:
+                        # 1. Convert stylized RGB->grayscale accoriding to Rec.601 luma (0.299, 0.587, 0.114)
+                        # 2. Convert stylized grayscale into YUV (YCbCr)
+                        # 3. Convert original image into YUV (YCbCr)
+                        # 4. Recombine (stylizedYUV.Y, originalYUV.U, originalYUV.V)
+                        # 5. Convert recombined image from YUV back to RGB
+                        
+                        # 1
+                        styled_grayscale = rgb2gray(styled_image)
+                        styled_grayscale_rgb = gray2rgb(styled_grayscale)
+                        # 2
+                        styled_grayscale_yuv = np.array( Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert('YCbCr') )
+
+                        # 3
+                        original_yuv = np.array( Image.fromarray(original_image.astype(np.uint8)).convert('YCbCr') )
+                        
+                        # 4
+                        w, h, _ = original_image.shape
+                        combined_yuv = np.empty((w, h, 3), dtype=np.uint8)
+                        combined_yuv[..., 0] = styled_grayscale_yuv[..., 0]
+                        combined_yuv[..., 1] = original_yuv[..., 1]
+                        combined_yuv[..., 2] = original_yuv[..., 2]
+                        
+                        # 5
+                        img_out = np.array( Image.fromarray(combined_yuv, 'YCbCr').convert('RGB') )
+
+                        
                     yield (
                         (None if last_step else i),
-                        vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
+                        img_out
                     )
 
         print("Optimization time: %fs" % (time.time() - opt_time))
@@ -257,3 +293,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
 def _tensor_size(tensor):
     from operator import mul
     return reduce(mul, (d.value for d in tensor.get_shape()), 1)
+
+def rgb2gray(rgb):
+    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
+
+def gray2rgb(gray):
+    w, h = gray.shape
+    rgb = np.empty((w, h, 3), dtype=np.float32)
+    rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
+    return rgb

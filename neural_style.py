@@ -10,9 +10,7 @@ from stylize import stylize
 import math
 from argparse import ArgumentParser
 
-from matplotlib import pyplot as plt
-
-import tensorflow as tf
+from PIL import Image
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -27,7 +25,6 @@ EPSILON = 1e-08
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
-PRESERVE_COLORS = 0
 POOLING = 'max'
 OPTIMIZER = 'lbfgs'
 CHECKPOINT_OUTPUT = 'checkpoint%04d.jpg'
@@ -102,9 +99,8 @@ def build_parser():
     parser.add_argument('--initial-noiseblend', type=float,
             dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
             metavar='INITIAL_NOISEBLEND')
-    parser.add_argument('--preserve-colors', type=int,
-            dest='preserve_colors', help='style-only transfer (preserving colors): 1 if color transfer is not needed (default %(default)s)',
-            metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
+    parser.add_argument('--preserve-colors', action='store_true',
+            dest='preserve_colors', help='style-only transfer (preserving colors) - if color transfer is not needed')
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
@@ -169,6 +165,7 @@ def main():
         initial_noiseblend=options.initial_noiseblend,
         content=content_image,
         styles=style_images,
+        preserve_colors=options.preserve_colors,
         iterations=options.iterations,
         content_weight=options.content_weight,
         content_weight_blend=options.content_weight_blend,
@@ -191,22 +188,6 @@ def main():
             if options.checkpoint_output:
                 output_file = options.checkpoint_output % iteration
         else:
-            if options.preserve_colors == 1:
-                original_image = tf.placeholder("float", [1, content_image.shape[0], content_image.shape[1], content_image.shape[2]])
-                styled_image = tf.placeholder("float", [1, image.shape[0], image.shape[1], image.shape[2]])            
-
-                styled_grayscale = tf.image.rgb_to_grayscale(styled_image)
-                styled_grayscale_rgb = tf.image.grayscale_to_rgb(styled_grayscale)
-                styled_grayscale_yuv = rgb2yuv(styled_grayscale_rgb)
-
-                original_yuv = rgb2yuv(original_image)
-
-                combined_yuv = tf.concat(3, [tf.split(3, 3, styled_grayscale_yuv)[0], tf.split(3, 3, original_yuv)[1], tf.split(3, 3, original_yuv)[2]])
-                combined_rgb_ = yuv2rgb(combined_yuv)
-            
-                with tf.Session() as sess:
-                    combined_rgb_results = sess.run(combined_rgb_, feed_dict={original_image: np.array([content_image / 255.0]), styled_image: np.array([image / 255.0])})
-                    combined_rgb = combined_rgb_results[0] * 255.0
             output_file = options.output
         if output_file:
             imsave(output_file, combined_rgb)
@@ -222,41 +203,7 @@ def imread(path):
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    plt.imsave(path, img)
-
-def rgb2yuv(rgb):
-    """
-    Convert RGB image into YUV https://en.wikipedia.org/wiki/YUV
-    """
-    rgb2yuv_filter = tf.constant(
-        [[[[0.299, -0.169, 0.499],
-           [0.587, -0.331, -0.418],
-            [0.114, 0.499, -0.0813]]]])
-    rgb2yuv_bias = tf.constant([0., 0.5, 0.5])
-
-    temp = tf.nn.conv2d(rgb, rgb2yuv_filter, [1, 1, 1, 1], 'SAME')
-    temp = tf.nn.bias_add(temp, rgb2yuv_bias)
-
-    return temp
-
-
-def yuv2rgb(yuv):
-    """
-    Convert YUV image into RGB https://en.wikipedia.org/wiki/YUV
-    """
-    yuv = tf.mul(yuv, 255)
-    yuv2rgb_filter = tf.constant(
-        [[[[1., 1., 1.],
-           [0., -0.34413999, 1.77199996],
-            [1.40199995, -0.71414, 0.]]]])
-    yuv2rgb_bias = tf.constant([-179.45599365, 135.45983887, -226.81599426])
-    temp = tf.nn.conv2d(yuv, yuv2rgb_filter, [1, 1, 1, 1], 'SAME')
-    temp = tf.nn.bias_add(temp, yuv2rgb_bias)
-    temp = tf.maximum(temp, tf.zeros(temp.get_shape(), dtype=tf.float32))
-    temp = tf.minimum(temp, tf.mul(
-        tf.ones(temp.get_shape(), dtype=tf.float32), 255))
-    temp = tf.div(temp, 255)
-    return temp    
+    Image.fromarray(img).save(path, quality=95)
 
 if __name__ == '__main__':
     main()
