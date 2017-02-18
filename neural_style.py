@@ -7,6 +7,7 @@ import scipy.misc
 
 from stylize import stylize
 
+import time
 import math
 from argparse import ArgumentParser
 
@@ -157,6 +158,8 @@ def main():
 
     print(">>> OUTPUT: %s" % (options.output))
 
+    total_time = time.time()
+    
     hierarchy_counter = 1
 
     iter_divider = 1.5
@@ -274,6 +277,8 @@ def main():
 
     if options.output:
         imsave(options.output, h_initial_guess)
+      
+    print("Total time: %fs" % (time.time() - total_time))
 
 
 def imread(path):
