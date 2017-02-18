@@ -22,7 +22,7 @@ except NameError:
 
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon, pooling, optimizer,
+        learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
@@ -33,6 +33,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
     :rtype: iterator[tuple[int|None,image]]
     """
+    activation_shift = ashift
+    
     shape = (1,) + content.shape
     style_shapes = [(1,) + style.shape for style in styles]
     content_features = {}
@@ -72,6 +74,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
+                # activation shift
+                features += np.full(features.shape, activation_shift)
                 gram = np.matmul(features.T, features) / features.size
                 style_features[i][layer] = gram
 
@@ -113,6 +117,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 _, height, width, number = map(lambda i: i.value, layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
+                # activation shift
+                feats += tf.fill(feats.get_shape(), activation_shift)
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
                 style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)

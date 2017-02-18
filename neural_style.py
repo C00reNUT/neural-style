@@ -31,6 +31,7 @@ OPTIMIZER = 'lbfgs'
 CHECKPOINT_OUTPUT = 'checkpoint%s.jpg'
 MAX_HIERARCHY = 1
 INITIAL_NOISEBLEND = 0.0
+ACTIVATION_SHIFT = 0.0
 
 def build_parser():
     parser = ArgumentParser()
@@ -113,6 +114,9 @@ def build_parser():
     parser.add_argument('--max-hierarchy', type=int,
             dest='max_hierarchy', help='maximum amount of downscaling steps to produce initial guess for the final step (default %(default)s)',
             metavar='MAX_HIERARCHY', default=MAX_HIERARCHY)
+    parser.add_argument('--ashift', type=float,
+            dest='ashift', help='Activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)',
+            metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT)
     return parser
 
 
@@ -239,6 +243,7 @@ def main():
             beta1=options.beta1,
             beta2=options.beta2,
             epsilon=options.epsilon,
+            ashift=options.ashift,
             pooling=options.pooling,
             optimizer=options.optimizer,
             print_iterations=options.print_iterations,
