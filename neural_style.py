@@ -170,7 +170,8 @@ def main():
     
     hierarchy_counter = 1
 
-    iter_divider = 1.5
+    ITER_DIVIDER_BASE = 1.5
+    iter_divider = ITER_DIVIDER_BASE
     iter_hierarchy = [ options.iterations ]
     
     dim_first = (content_image.shape[0], content_image.shape[1])
@@ -185,7 +186,7 @@ def main():
         dim_min = dim_new[0] if dim_new[0] < dim_new[1] else dim_new[1]
         
         dim_divider = dim_divider * 2
-        iter_divider = iter_divider * 1.5
+        iter_divider = iter_divider * ITER_DIVIDER_BASE
         hierarchy_counter = hierarchy_counter + 1
 
     num_channels = content_image.shape[2]
