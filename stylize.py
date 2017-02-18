@@ -22,7 +22,7 @@ except NameError:
     from functools import reduce
 
 
-def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
+def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
@@ -260,8 +260,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     
                     img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
                     
-                    if preserve_colors and preserve_colors == True:
-                        img_out = lumatransfer(original_image=np.clip(content, 0, 255), styled_image=np.clip(img_out, 0, 255))
+                    if preserve_colors_coeff and preserve_colors_coeff != 0.0:
+                        img_out_pc = lumatransfer(original_image=np.clip(content, 0, 255), styled_image=np.clip(img_out, 0, 255))
+                        if preserve_colors_coeff == 1.0:
+                            img_out = img_out_pc
+                        else:
+                            img_out = img_out_pc * preserve_colors_coeff + img_out * (1.0 - preserve_colors_coeff)
                         
                     yield (
                         (None if last_step else i),

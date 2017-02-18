@@ -32,6 +32,7 @@ CHECKPOINT_OUTPUT = 'checkpoint%s.jpg'
 MAX_HIERARCHY = 1
 INITIAL_NOISEBLEND = 0.0
 ACTIVATION_SHIFT = 0.0
+PRESERVE_COLORS = 'none'
 
 def build_parser():
     parser = ArgumentParser()
@@ -103,8 +104,9 @@ def build_parser():
     parser.add_argument('--initial-noiseblend', type=float,
             dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
             metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND)
-    parser.add_argument('--preserve-colors', action='store_true',
-            dest='preserve_colors', help='style-only transfer (preserving colors) - if color transfer is not needed')
+    parser.add_argument('--preserve-colors',
+            dest='preserve_colors', help='preserve colors of original content image, values: none/all/out/interm (default %(default)s)',
+            metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
@@ -114,6 +116,8 @@ def build_parser():
     parser.add_argument('--max-hierarchy', type=int,
             dest='max_hierarchy', help='maximum amount of downscaling steps to produce initial guess for the final step (default %(default)s)',
             metavar='MAX_HIERARCHY', default=MAX_HIERARCHY)
+    parser.add_argument('--h-preserve-colors', action='store_true',
+            dest='h_preserve_colors', help='preserving colors for intermediate tiles for hierarchical style trasnfer (output colors are controlled by different key)')
     parser.add_argument('--ashift', type=float,
             dest='ashift', help='Activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)',
             metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT)
@@ -193,7 +197,8 @@ def main():
     if options.initial_noiseblend is None:
         options.initial_noiseblend = 0.0
     
-    for idx in reversed(range(len(dim_hierarchy))):
+    hierarchy_steps = len(dim_hierarchy)
+    for idx in reversed(range(hierarchy_steps)):
         dim = dim_hierarchy[idx]
         iter = iter_hierarchy[idx]
         
@@ -223,6 +228,22 @@ def main():
             h_style_images.append( scipy.misc.imresize(style_images[i], style_scale *
                     target_shape[1] / style_images[i].shape[1]) )
         
+        h_preserve_colors_coeff = 0.0
+        if is_last_hierarchy_level:
+            if options.preserve_colors == 'all' or options.preserve_colors == 'out':
+                h_preserve_colors_coeff = 1.0
+        else:
+            if options.preserve_colors == 'all' or options.preserve_colors == 'interm':
+                #h_preserve_colors_coeff = 0.5
+                # we want biggest step to have least color preservation, to get proper style coloring, alpha = 1.0 on biggest step
+                # -2 is due to idx starting from 0 and last layer not obeying this scheme
+                h_preserve_alpha = (hierarchy_steps - 1 - idx) / (hierarchy_steps - 2)
+                SMALLEST_STEP_PC = 1.0
+                BIGGEST_STEP_PC = 0.3
+                h_preserve_colors_coeff = BIGGEST_STEP_PC * h_preserve_alpha + SMALLEST_STEP_PC * (1.0 - h_preserve_alpha)
+        
+        #print("Preserve colors coeff: %f" % (h_preserve_colors_coeff))
+        
         for iteration, image in stylize(
             network=options.network,
             initial=h_initial_guess,
@@ -231,7 +252,7 @@ def main():
             content=h_content,
 #            styles=style_images,
             styles=h_style_images,
-            preserve_colors=options.preserve_colors,
+            preserve_colors_coeff=h_preserve_colors_coeff,
             iterations=iter,
             content_weight=options.content_weight,
             content_weight_blend=options.content_weight_blend,
