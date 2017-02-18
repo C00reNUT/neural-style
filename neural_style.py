@@ -27,7 +27,9 @@ ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 POOLING = 'max'
 OPTIMIZER = 'lbfgs'
-CHECKPOINT_OUTPUT = 'checkpoint%04d.jpg'
+CHECKPOINT_OUTPUT = 'checkpoint%s.jpg'
+MAX_HIERARCHY = 1
+INITIAL_NOISEBLEND = 0.0
 
 def build_parser():
     parser = ArgumentParser()
@@ -98,7 +100,7 @@ def build_parser():
             metavar='INITIAL')
     parser.add_argument('--initial-noiseblend', type=float,
             dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
-            metavar='INITIAL_NOISEBLEND')
+            metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND)
     parser.add_argument('--preserve-colors', action='store_true',
             dest='preserve_colors', help='style-only transfer (preserving colors) - if color transfer is not needed')
     parser.add_argument('--pooling',
@@ -107,6 +109,9 @@ def build_parser():
     parser.add_argument('--optim',
             dest='optimizer', help='optimizer to minimize the loss: adam, lbfgs or cg (default %(default)s)',
             metavar='OPTIMIZER', default=OPTIMIZER)
+    parser.add_argument('--max-hierarchy', type=int,
+            dest='max_hierarchy', help='maximum amount of downscaling steps to produce initial guess for the final step (default %(default)s)',
+            metavar='MAX_HIERARCHY', default=MAX_HIERARCHY)
     return parser
 
 
@@ -125,6 +130,9 @@ def main():
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
         content_image = scipy.misc.imresize(content_image, new_shape)
+        
+    # TODO: remove this probably, since double doswnscale could affect quality
+    #   however, it could save some time if the style image is a lot bigger than content
     target_shape = content_image.shape
     for i in range(len(style_images)):
         style_scale = STYLE_SCALE
@@ -142,55 +150,130 @@ def main():
         style_blend_weights = [weight/total_blend_weight
                                for weight in style_blend_weights]
 
-    initial = options.initial
-    if initial is not None:
-        initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
-        # Initial guess is specified, but not noiseblend - no noise should be blended
-        if options.initial_noiseblend is None:
-            options.initial_noiseblend = 0.0
-    else:
-        # Neither inital, nor noiseblend is provided, falling back to random generated initial guess
-        if options.initial_noiseblend is None:
-            options.initial_noiseblend = 1.0
-        if options.initial_noiseblend < 1.0:
-            initial = content_image
-
-    if options.checkpoint_output and ("%s" not in options.checkpoint_output and "%04d" not in options.checkpoint_output):
+    # TODO: change checkpoint naming convention - they should also include hierarchy level
+    if options.checkpoint_output and ("%s" not in options.checkpoint_output):
         parser.error("To save intermediate images, the checkpoint output "
                      "parameter must contain `%s` (e.g. `foo%s.jpg`)")
 
-    for iteration, image in stylize(
-        network=options.network,
-        initial=initial,
-        initial_noiseblend=options.initial_noiseblend,
-        content=content_image,
-        styles=style_images,
-        preserve_colors=options.preserve_colors,
-        iterations=options.iterations,
-        content_weight=options.content_weight,
-        content_weight_blend=options.content_weight_blend,
-        style_weight=options.style_weight,
-        style_layer_weight_exp=options.style_layer_weight_exp,
-        style_blend_weights=style_blend_weights,
-        tv_weight=options.tv_weight,
-        learning_rate=options.learning_rate,
-        beta1=options.beta1,
-        beta2=options.beta2,
-        epsilon=options.epsilon,
-        pooling=options.pooling,
-        optimizer=options.optimizer,
-        print_iterations=options.print_iterations,
-        checkpoint_iterations=options.checkpoint_iterations
-    ):
-        output_file = None
-        combined_rgb = image
-        if iteration is not None:
-            if options.checkpoint_output:
-                output_file = options.checkpoint_output % iteration
+    print(">>> OUTPUT: %s" % (options.output))
+
+    hierarchy_counter = 1
+
+    iter_divider = 1.5
+    iter_hierarchy = [ options.iterations ]
+    
+    dim_first = (content_image.shape[0], content_image.shape[1])
+    dim_hierarchy = [ dim_first ]
+    dim_divider = 2
+    dim_min = dim_first[0] if dim_first[0] < dim_first[1] else dim_first[1]
+    while dim_min > 128 and hierarchy_counter < options.max_hierarchy:
+        dim_new = tuple(x // dim_divider for x in dim_first)
+        dim_hierarchy.append(dim_new)
+        iter_hierarchy.append(int(options.iterations / iter_divider))
+        
+        dim_min = dim_new[0] if dim_new[0] < dim_new[1] else dim_new[1]
+        
+        dim_divider = dim_divider * 2
+        iter_divider = iter_divider * 1.5
+        hierarchy_counter = hierarchy_counter + 1
+
+    num_channels = content_image.shape[2]
+    h_initial_guess = content_image
+
+    h_content = content_image
+    
+    # If noiseblend is not specified, it should be 0.0
+    if options.initial_noiseblend is None:
+        options.initial_noiseblend = 0.0
+    
+    for idx in reversed(range(len(dim_hierarchy))):
+        dim = dim_hierarchy[idx]
+        iter = iter_hierarchy[idx]
+        
+        # There is no point of getting below 25 iterations
+        if iter < 25:
+            iter = 25
+        
+        is_last_hierarchy_level = (idx == 0)
+        
+        # x == dim[1], y == dim[0], meh
+        print("Processing: %s / %d" % ((dim[1], dim[0]),iter))
+        
+        # If we only do 1 hierarchy step (e.g. no multgrid) - we don't need to resize content/initial
+        if options.max_hierarchy > 1:
+            h_initial_guess = scipy.misc.imresize(h_initial_guess, (dim[0], dim[1], num_channels))
+            h_content = scipy.misc.imresize(content_image, (dim[0], dim[1], num_channels))
+        
+        coeff = 0.9
+        h_initial_guess = h_initial_guess * coeff + h_content * (1.0 - coeff)
+        
+        target_shape = h_content.shape
+        h_style_images = []
+        for i in range(len(style_images)):
+            style_scale = STYLE_SCALE
+            if options.style_scales is not None:
+                style_scale = options.style_scales[i]
+            h_style_images.append( scipy.misc.imresize(style_images[i], style_scale *
+                    target_shape[1] / style_images[i].shape[1]) )
+        
+        for iteration, image in stylize(
+            network=options.network,
+            initial=h_initial_guess,
+            #initial=None,
+            initial_noiseblend=options.initial_noiseblend,
+            content=h_content,
+#            styles=style_images,
+            styles=h_style_images,
+            preserve_colors=options.preserve_colors,
+            iterations=iter,
+            content_weight=options.content_weight,
+            content_weight_blend=options.content_weight_blend,
+            style_weight=options.style_weight,
+            style_layer_weight_exp=options.style_layer_weight_exp,
+            style_blend_weights=style_blend_weights,
+            tv_weight=options.tv_weight,
+            learning_rate=options.learning_rate,
+            beta1=options.beta1,
+            beta2=options.beta2,
+            epsilon=options.epsilon,
+            pooling=options.pooling,
+            optimizer=options.optimizer,
+            print_iterations=options.print_iterations,
+            checkpoint_iterations=options.checkpoint_iterations
+        ):
+            output_file = None
+            combined_rgb = image
+            if iteration is not None:
+                if options.checkpoint_output:
+                    checkpoint_filename = options.checkpoint_output % ("%04dx%04d-%04d" % (dim[0], dim[1], iteration))
+                    imsave(checkpoint_filename, combined_rgb)
+            else:
+                h_initial_guess = image
+                    
+        if is_last_hierarchy_level:
+            # Last hierarchy level, we have the final output
+            imsave(options.output, combined_rgb)
         else:
-            output_file = options.output
-        if output_file:
-            imsave(output_file, combined_rgb)
+            # Not the last hierarchy level
+            # True to save intermediate hierarchy shots
+            if False:
+                h_intermediate_name = "h_interm_%04dx%04d.jpg" % (dim[0], dim[1])
+                imsave(h_intermediate_name, h_initial_guess)
+
+        # True to save scaled content images
+        if False:
+            h_content_name = "h_content_%04dx%04d.jpg" % (dim[0], dim[1])
+            imsave(h_content_name, h_content)
+        
+        # True to save scaled style images
+        if False:
+            for i in range(len(h_style_images)):
+                h_style_name = "h_style%d_%04dx%04d.jpg" % (i, dim[0], dim[1])
+                imsave(h_style_name, h_style_images[i])
+      
+
+    if options.output:
+        imsave(options.output, h_initial_guess)
 
 
 def imread(path):
@@ -199,7 +282,6 @@ def imread(path):
         # grayscale
         img = np.dstack((img,img,img))
     return img
-
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
