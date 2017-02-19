@@ -61,6 +61,8 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
 
+    build_time = time.time()
+    
     original_image = imread_uint8(options.input)
     # X and Y are swapped in PIL: size is (y, x, channels) - majority issue
     original_size = (original_image.shape[1], original_image.shape[0])
@@ -160,6 +162,8 @@ def main():
     output_name = add_suffix_filename(options.input, suffix)
     print("Out: %s" % (output_name))
     imsave(output_name, np.array(collage))
+    
+    print("Collage build time: %fs" % (time.time() - build_time))
     
 if __name__ == '__main__':
     main()
