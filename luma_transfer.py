@@ -11,6 +11,9 @@ from argparse import ArgumentParser
 
 from PIL import Image
 
+# default arguments
+MODE = 'yuv'
+
 def build_parser():
     parser = ArgumentParser()
     parser.add_argument('--content',
@@ -22,6 +25,9 @@ def build_parser():
     parser.add_argument('--output',
             dest='output', help='output path',
             metavar='OUTPUT', required=True)
+    parser.add_argument('--mode',
+            dest='mode', help='recombination mode: yuv/hsv (default %(default)s)',
+            metavar='MODE', default=MODE)           
     return parser
 
 
@@ -53,7 +59,34 @@ def lumatransfer(original_image, styled_image):
     img_out = np.array( Image.fromarray(combined_yuv, 'YCbCr').convert('RGB') )
 
     return img_out
+
+def lumatransfer_hsv(original_image, styled_image):
+    #The luminosity transfer steps:
+    # 1. Convert stylized image into HSV
+    # 2. Convert original image into HSV
+    # 3. Recombine (originalHSV.H, element-min(originalHSV.s, stylizedHSV.S), stylizedHSV.V), BUT
+    #   element-wise minimum for S is needed to avoid oversaturation
+    # 4. Convert recombined image from HSV back to RGB
     
+    # 1
+    styled_hsv = np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('HSV') )
+
+    # 2
+    original_hsv = np.array( Image.fromarray(original_image.astype(np.uint8)).convert('HSV') )
+    
+    # 3
+    w, h, _ = original_image.shape
+    combined_hsv = np.empty((w, h, 3), dtype=np.uint8)
+    combined_hsv[..., 0] = original_hsv[..., 0] # H
+    
+    combined_hsv[..., 1] = np.minimum(original_hsv[..., 1], styled_hsv[..., 1])
+    
+    combined_hsv[..., 2] = styled_hsv[..., 2] # V
+    
+    # 4
+    img_out = np.array( Image.fromarray(combined_hsv, 'HSV').convert('RGB') )
+
+    return img_out    
 
 def imread(path):
     img = scipy.misc.imread(path).astype(np.float)
@@ -85,7 +118,10 @@ def main():
 
     luma_time = time.time()
 
-    img_out = lumatransfer(original_image=original_image, styled_image=styled_image)
+    if options.mode == 'hsv':
+        img_out = lumatransfer_hsv(original_image=original_image, styled_image=styled_image)
+    else:
+        img_out = lumatransfer(original_image=original_image, styled_image=styled_image)
     
     print("Luma transfer time: %fs" % (time.time() - luma_time))
 
