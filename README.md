@@ -6,8 +6,15 @@ This implementation is a lot simpler than a lot of the other ones out there,
 thanks to TensorFlow's really nice API and [automatic differentiation][ad].
 
 TensorFlow doesn't support [L-BFGS][l-bfgs] (which is what the original authors
-used), so we use [Adam][adam]. This may require a little bit more
-hyperparameter tuning to get nice results.
+used) directly, so this implementation uses [TF External Optimizer][tf_ext_optimizer]
+(examples on how to use it could be found [here][tf_ext_optimizer_test] and
+[here][tf_ext_optimizer_test]) to utilize L-BFGS and CG optimizers. Using TF's [Adam][adam]
+optimizer is also an option, although this may require a little bit more hyperparameter
+tuning to get nice results. In order to specify which optimizer to use, `--optim`
+command line argument, e.g. `--optim cg` if you want to use CG optimizer.
+
+Be careful with checkpoints (see below) when using CG or L-BFGS, as each checkpoint
+splits the optimization procedure, which might negatively affect the convergence.
 
 **See [here][lengstrom-fast-style-transfer] for an implementation of [fast
 (feed-forward) neural style][fast-neural-style] in TensorFlow.**
@@ -93,3 +100,6 @@ Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
 [lengstrom-fast-style-transfer]: https://github.com/lengstrom/fast-style-transfer
 [fast-neural-style]: https://arxiv.org/pdf/1603.08155v1.pdf
 [license]: LICENSE.txt
+[tf_ext_optimizer]: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/opt/python/training/external_optimizer.py
+[tf_ext_optimizer_test]: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/opt/python/training/external_optimizer_test.py
+[tf_ext_optimizer_help]: https://www.tensorflow.org/versions/r1.0/api_docs/python/contrib.opt/other_functions_and_classes#ScipyOptimizerInterface
