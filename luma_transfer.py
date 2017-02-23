@@ -42,11 +42,16 @@ def lumatransfer(original_image, styled_image):
     # 4. Recombine (stylizedYUV.Y, originalYUV.U, originalYUV.V)
     # 5. Convert recombined image from YUV back to RGB
     
-    # 1
-    styled_grayscale = rgb2gray(styled_image)
-    styled_grayscale_rgb = gray2rgb(styled_grayscale)
-    # 2
-    styled_grayscale_yuv = np.array( Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert('YCbCr') )
+    perform_grayscale = False
+    if perform_grayscale == True:
+        # 1
+        styled_grayscale = rgb2gray(styled_image)
+        styled_grayscale_rgb = gray2rgb(styled_grayscale)
+        # 2
+        styled_grayscale_yuv = np.array( Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert('YCbCr') )
+    else:
+        # Skip #1 and just convert to YUV
+        styled_grayscale_yuv = np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('YCbCr') )
 
     # 3
     original_yuv = np.array( Image.fromarray(original_image.astype(np.uint8)).convert('YCbCr') )
@@ -104,7 +109,10 @@ def imsave(path, img):
     Image.fromarray(img).save(path, quality=95)
 
 def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
+    # Rec.601 luma
+    #return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
+    # Rec.709 luma
+    return np.dot(rgb[...,:3], [0.2126, 0.7152, 0.0722])
 
 def gray2rgb(gray):
     w, h = gray.shape
