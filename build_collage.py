@@ -22,6 +22,9 @@ def build_parser():
     parser.add_argument('--mode',
             dest='mode', help='mode to generate style preview, scale/crop/auto (default %(default)s)',
             metavar='MODE', default=MODE)
+    parser.add_argument('--styles-path',
+            dest='styles_path', help='optional path to styles images (by default uses input base path)'
+            )
     return parser
 
 
@@ -68,13 +71,17 @@ def main():
     original_size = (original_image.shape[1], original_image.shape[0])
 
     base_path_len = options.input.rfind('\\')
-    base_path = options.input[0:base_path_len]
-    processed = options.input[base_path_len:]
+    base_path = options.input[0:base_path_len+1]
+    processed = options.input[base_path_len+1:]
     
     print("Path: %s, file: %s" % (base_path, processed))
 
-    processed = processed.replace('tiles_', '')
-    processed = processed.replace('t_', '')
+    PREFIXES = ['tiles_', 't_']
+    for i in range(len(PREFIXES)):
+        str_idx = processed.find(PREFIXES[i])
+        if str_idx == 0:
+            processed = processed[len(PREFIXES[i]):]
+            break
     
     content_name, processed = trim_starting_filename(processed)
     # remove the underscore after the content filename
@@ -105,7 +112,10 @@ def main():
     #####################################################
     style_target_size = content_size
     style_target_aspect = style_target_size[0] / style_target_size[1]
-    style_image = imread_uint8(base_path + style_name)
+    if options.styles_path is None:
+        style_image = imread_uint8(base_path + style_name)
+    else:
+        style_image = imread_uint8(options.styles_path + style_name)
     # X and Y are swapped in PIL: size is (y, x, channels)
     style_size = (style_image.shape[1], style_image.shape[0])
     style_aspect = style_size[0] / style_size[1]
