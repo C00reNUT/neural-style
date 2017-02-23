@@ -45,7 +45,7 @@ def build_parser():
             metavar='STYLE', required=True)
     parser.add_argument('--output',
             dest='output', help='output path',
-            metavar='OUTPUT', required=True)
+            metavar='OUTPUT')
     parser.add_argument('--iterations', type=int,
             dest='iterations', help='iterations (default %(default)s)',
             metavar='ITERATIONS', default=ITERATIONS)
@@ -130,6 +130,24 @@ def main():
 
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
+
+    if options.output is None:
+        content_filename = options.content
+        content_filename_pos = options.content.rfind('\\')
+        if content_filename_pos != -1:
+            content_filename = options.content[content_filename_pos:]
+            
+        # For now, only works with the first style
+        style_filename = options.styles[0]        
+        style_filename_pos = options.styles[0].rfind('\\')
+        if style_filename_pos != -1:
+            style_filename = options.styles[0][style_filename_pos:]
+        
+        out_stylewe = int(options.style_layer_weight_exp * 10)
+        out_ashift = int(options.ashift)
+        
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_as%03d.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_ashift)
+        print("Using auto-generated output filename: %s" % (options.output))
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
