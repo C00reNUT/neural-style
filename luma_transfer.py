@@ -16,15 +16,18 @@ MODE = 'yuv'
 
 def build_parser():
     parser = ArgumentParser()
+    parser.add_argument('--in',
+            dest='input', help='input image',
+            metavar='INPUT')
     parser.add_argument('--content',
             dest='content', help='content image',
-            metavar='CONTENT', required=True)
+            metavar='CONTENT')
     parser.add_argument('--stylized',
             dest='stylized', help='one or more style images',
-            metavar='STYLIZED', required=True)
+            metavar='STYLIZED')
     parser.add_argument('--output',
             dest='output', help='output path',
-            metavar='OUTPUT', required=True)
+            metavar='OUTPUT')
     parser.add_argument('--mode',
             dest='mode', help='recombination mode: yuv/hsv (default %(default)s)',
             metavar='MODE', default=MODE)           
@@ -109,24 +112,84 @@ def gray2rgb(gray):
     rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
     return rgb
 
+EXTENSIONS = [ '.jpg', '.bmp', '.png', '.tga' ]
+    
+def trim_starting_filename(str):
+    for i in range(len(EXTENSIONS)):
+        filename_ext = str.find(EXTENSIONS[i])
+        if filename_ext != -1:
+            filename = str[0:filename_ext + len(EXTENSIONS[i])]
+            break
+    # move pointer to after the filename
+    str = str[len(filename):]
+    return filename, str
+
+def add_suffix_filename(filename, suffix):
+    for i in range(len(EXTENSIONS)):
+        filename_ext = filename.rfind(EXTENSIONS[i])
+        if filename_ext != -1:
+            filename_out = filename[0:filename_ext] + suffix + filename[filename_ext:]
+            break
+    return filename_out
+    
 def main():
     parser = build_parser()
     options = parser.parse_args()
 
-    original_image = imread(options.content)
-    styled_image = imread(options.stylized)
+    if options.input is not None:
+        base_path_len = options.input.rfind('\\')
+        base_path = options.input[0:base_path_len+1]
+        processed = options.input[base_path_len+1:]
+        
+        print("Path: %s, file: %s" % (base_path, processed))
+
+        PREFIXES = ['tiles_', 't_']
+        for i in range(len(PREFIXES)):
+            str_idx = processed.find(PREFIXES[i])
+            if str_idx == 0:
+                processed = processed[len(PREFIXES[i]):]
+                break
+        
+        content_name, processed = trim_starting_filename(processed)
+        # remove the underscore after the content filename
+        print(processed)
+        processed = processed[1:]
+
+        print(processed)
+        
+        style_name, processed = trim_starting_filename(processed)
+        # remove the underscore after the style filename
+        processed = processed[1:]
+        
+        print("Content: %s\nStyle: %s" % (content_name, style_name))
+        
+        original_image_path = content_name
+        styled_image_path = options.input
+    else:
+        original_image_path = options.content
+        styled_image_path = options.stylized
+    
+    original_image = imread(original_image_path)
+    styled_image = imread(styled_image_path)
 
     luma_time = time.time()
 
+    suffix = '_pc'
     if options.mode == 'hsv':
+        suffix = '_pchsv'
         img_out = lumatransfer_hsv(original_image=original_image, styled_image=styled_image)
     else:
+        suffix = '_pcyuv'
         img_out = lumatransfer(original_image=original_image, styled_image=styled_image)
     
     print("Luma transfer time: %fs" % (time.time() - luma_time))
 
-    output_file = options.output
-    imsave(options.output, img_out)
+    if options.output is not None:
+        output_filename = options.output
+    else:
+        output_filename = add_suffix_filename(options.input, suffix)
+    print("Out: %s" % (output_filename))
+    imsave(output_filename, img_out)
     
 if __name__ == '__main__':
     main()
