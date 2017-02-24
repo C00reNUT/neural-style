@@ -122,6 +122,10 @@ def build_parser():
     parser.add_argument('--ashift', type=float,
             dest='ashift', help='Activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)',
             metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT)
+    parser.add_argument('--out-postfix',
+            dest='out_postfix', help='when the name is auto-generated, add custom postfix',
+            metavar='OUT_POSTFIX')
+            
     return parser
 
 
@@ -148,6 +152,12 @@ def main():
         out_ashift = int(options.ashift)
         
         options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_as%03d.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_ashift)
+        postfix = ""
+        if options.out_postfix is not None:
+            postfix = "_" + options.out_postfix
+            
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_as%03d%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_ashift, postfix)
+        
         print("Using auto-generated output filename: %s" % (options.output))
 
     content_image = imread(options.content)
