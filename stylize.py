@@ -14,14 +14,10 @@ from PIL import Image
 
 from luma_transfer import lumatransfer
 
-CONTENT_LAYERS = ('relu4_2', 'relu5_2')
-STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
-
 try:
     reduce
 except NameError:
     from functools import reduce
-
 
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
@@ -43,7 +39,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     content_features = {}
     style_features = [{} for _ in styles]
 
-    vgg_weights, vgg_mean_pixel = vgg.load_net(network)
+    net_module = vgg
+    
+    CONTENT_LAYERS = net_module.get_content_layers()
+    STYLE_LAYERS = net_module.get_style_layers()
+    
+    vgg_weights, vgg_mean_pixel = net_module.load_net(network)
     
     layer_weight = 1.0
     style_layers_weights = {}
@@ -62,8 +63,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
-        net = vgg.net_preloaded(vgg_weights, image, pooling)
-        content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
+        net = net_module.net_preloaded(vgg_weights, image, pooling)
+        content_pre = np.array([net_module.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
@@ -72,8 +73,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
             image = tf.placeholder('float', shape=style_shapes[i])
-            net = vgg.net_preloaded(vgg_weights, image, pooling)
-            style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
+            net = net_module.net_preloaded(vgg_weights, image, pooling)
+            style_pre = np.array([net_module.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
@@ -91,17 +92,20 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = tf.random_normal(shape) * 0.256
         else:
-            initial = np.array([vgg.preprocess(initial, vgg_mean_pixel)])
+            initial = np.array([net_module.preprocess(initial, vgg_mean_pixel)])
             initial = initial.astype('float32')
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
-        net = vgg.net_preloaded(vgg_weights, image, pooling)
+        net = net_module.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
         content_layers_weights = {}
-        content_layers_weights['relu4_2'] = content_weight_blend
-        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
+        clw = (content_weight_blend, 1.0 - content_weight_blend)
+        idx = 0
+        for content_layer in CONTENT_LAYERS:
+            content_layers_weights[content_layer] = clw[idx]
+            idx += 1
         
         content_loss = 0
         content_losses = []
@@ -259,7 +263,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         best_loss = this_loss
                         best = image.eval()
                     
-                    img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
+                    img_out = net_module.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
                     
                     if preserve_colors_coeff and preserve_colors_coeff != 0.0:
                         img_out_pc = lumatransfer(original_image=np.clip(content, 0, 255), styled_image=np.clip(img_out, 0, 255))
