@@ -2,6 +2,7 @@
 # Copyright (c) 2017 Andrey Voroshilov
 
 import vgg
+import sqz
 
 import tensorflow as tf
 import numpy as np
@@ -19,7 +20,7 @@ try:
 except NameError:
     from functools import reduce
 
-def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
+def stylize(network_file, network_type, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
@@ -39,12 +40,15 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     content_features = {}
     style_features = [{} for _ in styles]
 
-    net_module = vgg
+    if network_type == 'sqz':
+        net_module = sqz
+    else:
+        net_module = vgg
     
     CONTENT_LAYERS = net_module.get_content_layers()
     STYLE_LAYERS = net_module.get_style_layers()
     
-    vgg_weights, vgg_mean_pixel = net_module.load_net(network)
+    vgg_weights, vgg_mean_pixel = net_module.load_net(network_file)
     
     # calculate content layer weights
     clw = (content_weight_blend, 1.0 - content_weight_blend)

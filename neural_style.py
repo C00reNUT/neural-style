@@ -33,6 +33,7 @@ MAX_HIERARCHY = 1
 INITIAL_NOISEBLEND = 0.0
 ACTIVATION_SHIFT = 0.0
 PRESERVE_COLORS = 'none'
+NETWORK_TYPE = 'vgg'
 
 def build_parser():
     parser = ArgumentParser()
@@ -65,9 +66,12 @@ def build_parser():
             dest='style_scales',
             nargs='+', help='one or more style scales',
             metavar='STYLE_SCALE')
-    parser.add_argument('--network',
-            dest='network', help='path to pretrained network parameters (default %(default)s)',
-            metavar='VGG_PATH')
+    parser.add_argument('--network-file',
+            dest='network_file', help='path to pretrained network parameters',
+            metavar='NETWORK_FILE')
+    parser.add_argument('--network-type',
+            dest='network_type', help='neural network model to use: vgg / sqz (default %(default)s)',
+            metavar='NETWORK_TYPE', default=NETWORK_TYPE)
     parser.add_argument('--content-weight-blend', type=float,
             dest='content_weight_blend', help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)',
             metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND)
@@ -152,7 +156,7 @@ def main():
         if options.out_postfix is not None:
             postfix = "_" + options.out_postfix
             
-        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, postfix)
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, postfix)
         
         print("Using auto-generated output filename: %s" % (options.output))
 
@@ -271,7 +275,8 @@ def main():
         #print("Preserve colors coeff: %f" % (h_preserve_colors_coeff))
         
         for iteration, image in stylize(
-            network=options.network,
+            network_file=options.network_file,
+            network_type=options.network_type,
             initial=h_initial_guess,
             #initial=None,
             initial_noiseblend=options.initial_noiseblend,
