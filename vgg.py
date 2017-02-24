@@ -1,6 +1,7 @@
 # Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3.
 # Copyright (c) 2017 Andrey Voroshilov
 
+import os
 import tensorflow as tf
 import numpy as np
 import scipy.io
@@ -24,6 +25,11 @@ CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
 def load_net(data_path):
+    if data_path is None:
+        data_path = 'imagenet-vgg-verydeep-19.mat'
+    if not os.path.isfile(data_path):
+        parser.error("Network %s does not exist. (Did you forget to download it?)" % data_path)
+
     data = scipy.io.loadmat(data_path)
     mean = data['normalization'][0][0][0]
     mean_pixel = np.mean(mean, axis=(0, 1))

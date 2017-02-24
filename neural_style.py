@@ -26,7 +26,6 @@ BETA2 = 0.999
 EPSILON = 1e-08
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
-VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 POOLING = 'max'
 OPTIMIZER = 'lbfgs'
 CHECKPOINT_OUTPUT = 'checkpoint%s.jpg'
@@ -67,8 +66,8 @@ def build_parser():
             nargs='+', help='one or more style scales',
             metavar='STYLE_SCALE')
     parser.add_argument('--network',
-            dest='network', help='path to network parameters (default %(default)s)',
-            metavar='VGG_PATH', default=VGG_PATH)
+            dest='network', help='path to pretrained network parameters (default %(default)s)',
+            metavar='VGG_PATH')
     parser.add_argument('--content-weight-blend', type=float,
             dest='content_weight_blend', help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)',
             metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND)
@@ -132,9 +131,6 @@ def build_parser():
 def main():
     parser = build_parser()
     options = parser.parse_args()
-
-    if not os.path.isfile(options.network):
-        parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
 
     if options.output is None:
         content_filename = options.content
