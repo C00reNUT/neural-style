@@ -233,7 +233,7 @@ def main():
         iter = iter_hierarchy[idx]
         
         # There is no point of getting below 25 iterations
-        if iter < 25:
+        if hierarchy_steps > 1 and iter < 25:
             iter = 25
         
         is_last_hierarchy_level = (idx == 0)
