@@ -19,6 +19,21 @@ splits the optimization procedure, which might negatively affect the convergence
 **See [here][lengstrom-fast-style-transfer] for an implementation of [fast
 (feed-forward) neural style][fast-neural-style] in TensorFlow.**
 
+## Improvements
+
+Some improvements of this implementation over vanilla "A Neural Algorithm of Artistic Style" paper:
+* Hierarchical style transfer (see `--max-hierarchy`)
+* Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch)
+* Adjustable inter-layer weights (see `--style-layer-weight-exp`)
+* Adjustable pooling (use `--pooling`)
+* Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`)
+* More layers to extract content and style from
+* Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style](https://arxiv.org/abs/1605.04603)
+
+Original (base) implementation of TF style transfer introduced styles blending.
+This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
+
+
 ## Running
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
