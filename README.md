@@ -21,14 +21,14 @@ splits the optimization procedure, which might negatively affect the convergence
 
 ## Improvements
 
-Some improvements of this implementation over vanilla "A Neural Algorithm of Artistic Style" paper:
+Some improvements of this implementation over vanilla ["A Neural Algorithm of Artistic Style"][paper_arxiv] paper:
 * Hierarchical style transfer (see `--max-hierarchy`)
 * Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch)
 * Adjustable inter-layer weights (see `--style-layer-weight-exp`)
 * Adjustable pooling (use `--pooling`)
 * Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`)
 * More layers to extract content and style from
-* Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style](https://arxiv.org/abs/1605.04603)
+* Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
 
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
@@ -109,6 +109,8 @@ Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
 
 [net]: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
+[paper_arxiv]: https://arxiv.org/abs/1508.06576
+[improv_paper_arxiv]: https://arxiv.org/abs/1605.04603
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
 [ad]: https://en.wikipedia.org/wiki/Automatic_differentiation
