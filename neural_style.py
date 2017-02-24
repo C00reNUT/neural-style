@@ -151,7 +151,6 @@ def main():
         out_stylewe = int(options.style_layer_weight_exp * 10)
         out_ashift = int(options.ashift)
         
-        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_as%03d.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_ashift)
         postfix = ""
         if options.out_postfix is not None:
             postfix = "_" + options.out_postfix
