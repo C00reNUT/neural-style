@@ -48,7 +48,17 @@ SQUEEZENET_LAYERS = (
     'fire9/concat',
 )
 
-CONTENT_LAYERS = ('conv1_actv', 'fire9/concat_conc')
+CONTENT_LAYERS = (
+    'conv1_actv',
+    'fire2/squeeze1x1_actv',
+    'fire3/squeeze1x1_actv',
+    'fire4/squeeze1x1_actv',
+    'fire5/squeeze1x1_actv',
+    'fire6/squeeze1x1_actv',
+    'fire7/squeeze1x1_actv',
+    'fire8/squeeze1x1_actv',
+    'fire9/squeeze1x1_actv'
+    )
 
 STYLE_POSTFIX1 = '_actv'
 STYLE_LAYERS = (
