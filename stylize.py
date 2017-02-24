@@ -46,6 +46,23 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     
     vgg_weights, vgg_mean_pixel = net_module.load_net(network)
     
+    # calculate content layer weights
+    clw = (content_weight_blend, 1.0 - content_weight_blend)
+    content_layer_weight_exp = clw[1] / clw[0]
+    layer_weight = 1.0
+    content_layers_weights = {}
+    for content_layer in CONTENT_LAYERS:
+        content_layers_weights[content_layer] = layer_weight
+        layer_weight *= content_layer_weight_exp
+
+    # normalize content layer weights
+    layer_weights_sum = 0
+    for content_layer in CONTENT_LAYERS:
+        layer_weights_sum += content_layers_weights[content_layer]
+    for content_layer in CONTENT_LAYERS:
+        content_layers_weights[content_layer] /= layer_weights_sum
+    
+    # calculate style layer weights
     layer_weight = 1.0
     style_layers_weights = {}
     for style_layer in STYLE_LAYERS:
@@ -100,13 +117,6 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         net = net_module.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
-        content_layers_weights = {}
-        clw = (content_weight_blend, 1.0 - content_weight_blend)
-        idx = 0
-        for content_layer in CONTENT_LAYERS:
-            content_layers_weights[content_layer] = clw[idx]
-            idx += 1
-        
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
