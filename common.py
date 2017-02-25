@@ -4,9 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 def get_dtype_tf():
-    #return tf.float32
-    return tf.float16
+    return tf.float32
 
 def get_dtype_np():
-    #return np.float32
-    return np.float16
+    return np.float32
