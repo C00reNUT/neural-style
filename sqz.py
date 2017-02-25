@@ -4,6 +4,7 @@ import os
 import tensorflow as tf
 import numpy as np
 import scipy.io
+import common
 
 # SqueezeNet v1.1 (signature pool 1/3/5)
 
@@ -86,9 +87,20 @@ def load_net(data_path):
     if not os.path.isfile(data_path):
         parser.error("Network %s does not exist. (Did you forget to download it?)" % data_path)
 
-    data = scipy.io.loadmat(data_path)
-    mean_pixel = np.array([104.006, 116.669, 122.679], dtype='float32')
-    return data, mean_pixel
+    weights_raw = scipy.io.loadmat(data_path)
+    
+    # Converting to needed type
+    weights = {}
+    for name in weights_raw:
+        weights[name] = []
+        # skipping '__version__', '__header__', '__globals__'
+        if name[0:2] != '__':
+            kernels, bias = weights_raw[name][0]
+            weights[name].append( kernels.astype(common.get_dtype_np()) )
+            weights[name].append( bias.astype(common.get_dtype_np()) )
+    
+    mean_pixel = np.array([104.006, 116.669, 122.679], dtype=common.get_dtype_np())
+    return weights, mean_pixel
 
 def preprocess(image, mean_pixel):
     swap_img = np.array(image)
@@ -103,7 +115,7 @@ def unprocess(image, mean_pixel):
     return image + mean_pixel
 
 def get_weights_biases(preloaded, layer_name):
-    weights, biases = preloaded[layer_name][0]
+    weights, biases = preloaded[layer_name]
     biases = biases.reshape(-1)
     return (weights, biases)
 
@@ -134,7 +146,8 @@ def fire_cluster(net, x, preloaded, cluster_name):
 
 def net_preloaded(preloaded, input_image, pooling, needs_classifier=False):
     net = {}
-    x = input_image
+
+    x = tf.cast(input_image, common.get_dtype_tf())
 
     # Feature extractor
     #####################

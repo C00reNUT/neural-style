@@ -14,6 +14,7 @@ from sys import stderr
 from PIL import Image
 
 from luma_transfer import lumatransfer
+import common
 
 try:
     reduce
@@ -83,7 +84,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     # compute content features in feedforward mode
     g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-        image = tf.placeholder('float', shape=shape)
+        image = tf.placeholder(common.get_dtype_tf(), shape=shape)
         net = net_module.net_preloaded(vgg_weights, image, pooling)
         content_pre = np.array([net_module.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
@@ -93,14 +94,14 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     for i in range(len(styles)):
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-            image = tf.placeholder('float', shape=style_shapes[i])
+            image = tf.placeholder(common.get_dtype_tf(), shape=style_shapes[i])
             net = net_module.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([net_module.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
                 # activation shift
-                features += np.full(features.shape, activation_shift)
+                features += np.full(features.shape, common.get_dtype_np()(activation_shift))
                 gram = np.matmul(features.T, features) / features.size
                 style_features[i][layer] = gram
 
@@ -115,7 +116,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
             initial = tf.random_normal(shape) * NOISE_AMP
         else:
             initial = np.array([net_module.preprocess(initial, vgg_mean_pixel)])
-            initial = initial.astype('float32')
+            initial = initial.astype(common.get_dtype_np())
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * NOISE_AMP) * (1.0 - initial_content_noise_coeff)
 
@@ -141,7 +142,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
                 # activation shift
-                feats += tf.fill(feats.get_shape(), activation_shift)
+                feats += tf.fill(feats.get_shape(), tf.cast(activation_shift, common.get_dtype_tf()))
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
                 style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
@@ -156,7 +157,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 (tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]) /
                     tv_x_size))
         # overall loss
-        loss = content_loss + style_loss + tv_loss
+        loss = tf.cast(content_loss, common.get_dtype_tf()) + tf.cast(style_loss, common.get_dtype_tf()) + tf.cast(tv_loss, common.get_dtype_tf())
 
         # optimizer setup
         def iter_callback(data=None):
@@ -304,6 +305,6 @@ def rgb2gray(rgb):
 
 def gray2rgb(gray):
     w, h = gray.shape
-    rgb = np.empty((w, h, 3), dtype=np.float32)
+    rgb = np.empty((w, h, 3), dtype=common.get_dtype_np())
     rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
     return rgb

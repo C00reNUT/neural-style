@@ -7,6 +7,7 @@ import numpy as np
 import scipy.misc
 
 from stylize import stylize
+import common
 
 import time
 import math
@@ -339,7 +340,7 @@ def main():
 
 
 def imread(path):
-    img = scipy.misc.imread(path).astype(np.float)
+    img = scipy.misc.imread(path).astype(common.get_dtype_np())
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
