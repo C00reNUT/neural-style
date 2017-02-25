@@ -93,18 +93,18 @@ style blend weight of 0.2:
 If you use this implementation in your work, please cite the following:
 
 ```
-@misc{athalye2015neuralstyle,
-  author = {Anish Athalye},
+@misc{avoroshilov2017neuralstyle,
+  author = {Andrey Voroshilov, Anish Athalye},
   title = {Neural Style},
-  year = {2015},
-  howpublished = {\url{https://github.com/anishathalye/neural-style}},
+  year = {2017},
+  howpublished = {\url{https://github.com/avoroshilov/neural-style/tree/dev}},
   note = {commit xxxxxxx}
 }
 ```
 
 ## License
 
-Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
+Copyright (c) 2017 Andrey Voroshilov, 2015-2016 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
 [net]: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
