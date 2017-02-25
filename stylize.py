@@ -299,12 +299,3 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
 def _tensor_size(tensor):
     from operator import mul
     return reduce(mul, (d.value for d in tensor.get_shape()), 1)
-
-def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
-
-def gray2rgb(gray):
-    w, h = gray.shape
-    rgb = np.empty((w, h, 3), dtype=common.get_dtype_np())
-    rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
-    return rgb
