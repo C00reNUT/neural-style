@@ -214,7 +214,6 @@ def _conv_layer(net, name, input, weights, bias, padding='SAME', stride=(1, 1)):
     return x
 
 def _act_layer(net, name, input):
-    #x = tf.nn.relu(input)
     x = tf.nn.relu(input)
     net[name] = x
     return x
