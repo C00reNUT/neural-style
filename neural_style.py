@@ -8,12 +8,11 @@ import scipy.misc
 
 from stylize import stylize
 import common
+import common_images as comimg
 
 import time
 import math
 from argparse import ArgumentParser
-
-from PIL import Image
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -161,8 +160,8 @@ def main():
         
         print("Using auto-generated output filename: %s" % (options.output))
 
-    content_image = imread(options.content)
-    style_images = [imread(style) for style in options.styles]
+    content_image = comimg.imread(options.content).astype(common.get_dtype_np())
+    style_images = [comimg.imread(style).astype(common.get_dtype_np()) for style in options.styles]
 
     width = options.width
     if width is not None:
@@ -307,48 +306,36 @@ def main():
             if iteration is not None:
                 if options.checkpoint_output:
                     checkpoint_filename = options.checkpoint_output % ("%04dx%04d-%04d" % (dim[0], dim[1], iteration))
-                    imsave(checkpoint_filename, combined_rgb)
+                    comimg.imsave(checkpoint_filename, combined_rgb)
             else:
                 h_initial_guess = image
                     
         if is_last_hierarchy_level:
             # Last hierarchy level, we have the final output
-            imsave(options.output, combined_rgb)
+            comimg.imsave(options.output, combined_rgb)
         else:
             # Not the last hierarchy level
             # True to save intermediate hierarchy shots
             if False:
                 h_intermediate_name = "h_interm_%04dx%04d.jpg" % (dim[0], dim[1])
-                imsave(h_intermediate_name, h_initial_guess)
+                comimg.imsave(h_intermediate_name, h_initial_guess)
 
         # True to save scaled content images
         if False:
             h_content_name = "h_content_%04dx%04d.jpg" % (dim[0], dim[1])
-            imsave(h_content_name, h_content)
+            comimg.imsave(h_content_name, h_content)
         
         # True to save scaled style images
         if False:
             for i in range(len(h_style_images)):
                 h_style_name = "h_style%d_%04dx%04d.jpg" % (i, dim[0], dim[1])
-                imsave(h_style_name, h_style_images[i])
+                comimg.imsave(h_style_name, h_style_images[i])
       
 
     if options.output:
-        imsave(options.output, h_initial_guess)
+        comimg.imsave(options.output, h_initial_guess)
       
     print("Total time: %fs" % (time.time() - total_time))
-
-
-def imread(path):
-    img = scipy.misc.imread(path).astype(common.get_dtype_np())
-    if len(img.shape) == 2:
-        # grayscale
-        img = np.dstack((img,img,img))
-    return img
-
-def imsave(path, img):
-    img = np.clip(img, 0, 255).astype(np.uint8)
-    Image.fromarray(img).save(path, quality=95)
 
 if __name__ == '__main__':
     main()

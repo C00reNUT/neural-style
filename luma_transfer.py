@@ -11,6 +11,8 @@ from argparse import ArgumentParser
 
 from PIL import Image
 
+import common_images as comimg
+
 # default arguments
 MODE = 'yuv'
 
@@ -96,18 +98,6 @@ def lumatransfer_hsv(original_image, styled_image):
 
     return img_out    
 
-def imread(path):
-    img = scipy.misc.imread(path).astype(np.float)
-    if len(img.shape) == 2:
-        # grayscale
-        img = np.dstack((img,img,img))
-    return img
-
-
-def imsave(path, img):
-    img = np.clip(img, 0, 255).astype(np.uint8)
-    Image.fromarray(img).save(path, quality=95)
-
 def rgb2gray(rgb):
     # Rec.601 luma
     #return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
@@ -120,26 +110,6 @@ def gray2rgb(gray):
     rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
     return rgb
 
-EXTENSIONS = [ '.jpg', '.bmp', '.png', '.tga' ]
-    
-def trim_starting_filename(str):
-    for i in range(len(EXTENSIONS)):
-        filename_ext = str.find(EXTENSIONS[i])
-        if filename_ext != -1:
-            filename = str[0:filename_ext + len(EXTENSIONS[i])]
-            break
-    # move pointer to after the filename
-    str = str[len(filename):]
-    return filename, str
-
-def add_suffix_filename(filename, suffix):
-    for i in range(len(EXTENSIONS)):
-        filename_ext = filename.rfind(EXTENSIONS[i])
-        if filename_ext != -1:
-            filename_out = filename[0:filename_ext] + suffix + filename[filename_ext:]
-            break
-    return filename_out
-    
 def main():
     parser = build_parser()
     options = parser.parse_args()
@@ -158,14 +128,14 @@ def main():
                 processed = processed[len(PREFIXES[i]):]
                 break
         
-        content_name, processed = trim_starting_filename(processed)
+        content_name, processed = comimg.trim_starting_filename(processed)
         # remove the underscore after the content filename
         print(processed)
         processed = processed[1:]
 
         print(processed)
         
-        style_name, processed = trim_starting_filename(processed)
+        style_name, processed = comimg.trim_starting_filename(processed)
         # remove the underscore after the style filename
         processed = processed[1:]
         
@@ -177,8 +147,8 @@ def main():
         original_image_path = options.content
         styled_image_path = options.stylized
     
-    original_image = imread(original_image_path)
-    styled_image = imread(styled_image_path)
+    original_image = comimg.imread(original_image_path)
+    styled_image = comimg.imread(styled_image_path)
 
     luma_time = time.time()
 
@@ -195,9 +165,9 @@ def main():
     if options.output is not None:
         output_filename = options.output
     else:
-        output_filename = add_suffix_filename(options.input, suffix)
+        output_filename = comimg.add_suffix_filename(options.input, suffix)
     print("Out: %s" % (output_filename))
-    imsave(output_filename, img_out)
+    comimg.imsave(output_filename, img_out)
     
 if __name__ == '__main__':
     main()
