@@ -63,6 +63,7 @@ CONTENT_LAYERS = (
 
 STYLE_POSTFIX1 = '_actv'
 STYLE_LAYERS = (
+    'conv1_actv',
     'fire2/expand1x1' + STYLE_POSTFIX1,
     'fire2/expand3x3' + STYLE_POSTFIX1,
     'fire3/expand1x1' + STYLE_POSTFIX1,
