@@ -106,17 +106,19 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
                 
+    NOISE_AMP = 64.0*0.256
     # make stylized image using backpropogation
     with tf.Graph().as_default():
         global_step = tf.Variable(0, trainable=False)
         if initial is None:
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = tf.random_normal(shape) * 0.256
+            initial = tf.random_normal(shape) * NOISE_AMP
         else:
             initial = np.array([net_module.preprocess(initial, vgg_mean_pixel)])
             initial = initial.astype('float32')
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
+            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * NOISE_AMP) * (1.0 - initial_content_noise_coeff)
+
         image = tf.Variable(initial)
         net = net_module.net_preloaded(vgg_weights, image, pooling)
 
