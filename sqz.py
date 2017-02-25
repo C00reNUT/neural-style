@@ -139,6 +139,8 @@ def net_preloaded(preloaded, input_image, pooling, needs_classifier=False):
     # Feature extractor
     #####################
     
+    bypass = False
+    
     # conv1 cluster
     layer_name = 'conv1'
     weights, biases = get_weights_biases(preloaded, layer_name)
@@ -148,17 +150,26 @@ def net_preloaded(preloaded, input_image, pooling, needs_classifier=False):
 
     # fire2 + fire3 clusters
     x = fire_cluster(net, x, preloaded, cluster_name='fire2')
+    fire2_bypass = x
     x = fire_cluster(net, x, preloaded, cluster_name='fire3')
+    if bypass == True:
+        x = x + fire2_bypass
     x = _pool_layer(net, 'pool3_pool', x, pooling, size=(3, 3), stride=(2, 2), padding='VALID')
 
     # fire4 + fire5 clusters
     x = fire_cluster(net, x, preloaded, cluster_name='fire4')
+    fire4_bypass = x
     x = fire_cluster(net, x, preloaded, cluster_name='fire5')
+    if bypass == True:
+        x = x + fire4_bypass
     x = _pool_layer(net, 'pool5_pool', x, pooling, size=(3, 3), stride=(2, 2), padding='VALID')
 
     # remainder (no pooling)
     x = fire_cluster(net, x, preloaded, cluster_name='fire6')
+    fire6_bypass = x
     x = fire_cluster(net, x, preloaded, cluster_name='fire7')
+    if bypass == True:
+        x = x + fire6_bypass
     x = fire_cluster(net, x, preloaded, cluster_name='fire8')
     x = fire_cluster(net, x, preloaded, cluster_name='fire9')
     
