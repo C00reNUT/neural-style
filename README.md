@@ -55,7 +55,7 @@ default parameters):
 
 ![output](examples/1-output.jpg)
 
-These were the input images used (me sleeping at a hackathon and Starry Night):
+These were the input images used (Anish Athalye sleeping at a hackathon and Starry Night):
 
 ![input-content](examples/1-content.jpg)
 
