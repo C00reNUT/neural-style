@@ -10,6 +10,8 @@ from stylize import stylize
 import common
 import common_images as comimg
 
+import build_collage
+
 import time
 import math
 from argparse import ArgumentParser
@@ -68,6 +70,7 @@ def build_parser():
     ps.add_argument('--ashift',             dest='ashift', type=float, metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT,
                                             help='activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)')
     ps.add_argument('--out-postfix',        dest='out_postfix', help='when the name is auto-generated, add custom postfix', metavar='OUT_POSTFIX')
+    ps.add_argument('--no-collage',         dest='no_collage', action='store_true', help='do not append downscaled content and style to the result')
 
     # Adam specific arguments
     ps.add_argument('--learning-rate',      dest='learning_rate', type=float, help='learning rate (default %(default)s)', metavar='LEARNING_RATE', default=LEARNING_RATE)
@@ -259,6 +262,15 @@ def main():
                 h_initial_guess = image
                     
         if is_last_hierarchy_level:
+            if options.no_collage is None or options.no_collage == False:
+                # For now, only works with the first style
+                combined_rgb, _ =  build_collage.build_collage(
+                                        np.clip(combined_rgb, 0, 255).astype(np.uint8),
+                                        np.clip(content_image, 0, 255).astype(np.uint8),
+                                        np.clip(style_images[0], 0, 255).astype(np.uint8),
+                                        'crop'
+                                        )
+            
             # Last hierarchy level, we have the final output
             comimg.imsave(options.output, combined_rgb)
         else:
