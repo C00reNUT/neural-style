@@ -292,8 +292,8 @@ def main():
                 comimg.imsave(h_style_name, h_style_images[i])
       
 
-    if options.output:
-        comimg.imsave(options.output, h_initial_guess)
+    #if options.output:
+    #    comimg.imsave(options.output, h_initial_guess)
       
     print("Total time: %fs" % (time.time() - total_time))
 
