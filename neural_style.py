@@ -36,101 +36,48 @@ PRESERVE_COLORS = 'none'
 NETWORK_TYPE = 'vgg'
 
 def build_parser():
-    parser = ArgumentParser()
-    parser.add_argument('--content',
-            dest='content', help='content image',
-            metavar='CONTENT', required=True)
-    parser.add_argument('--styles',
-            dest='styles',
-            nargs='+', help='one or more style images',
-            metavar='STYLE', required=True)
-    parser.add_argument('--output',
-            dest='output', help='output path',
-            metavar='OUTPUT')
-    parser.add_argument('--iterations', type=int,
-            dest='iterations', help='iterations (default %(default)s)',
-            metavar='ITERATIONS', default=ITERATIONS)
-    parser.add_argument('--print-iterations', type=int,
-            dest='print_iterations', help='statistics printing frequency',
-            metavar='PRINT_ITERATIONS')
-    parser.add_argument('--checkpoint-output',
-            dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg',
-            metavar='OUTPUT', default=CHECKPOINT_OUTPUT)
-    parser.add_argument('--checkpoint-iterations', type=int,
-            dest='checkpoint_iterations', help='checkpoint frequency',
-            metavar='CHECKPOINT_ITERATIONS')
-    parser.add_argument('--width', type=int,
-            dest='width', help='output width',
-            metavar='WIDTH')
-    parser.add_argument('--style-scales', type=float,
-            dest='style_scales',
-            nargs='+', help='one or more style scales',
-            metavar='STYLE_SCALE')
-    parser.add_argument('--network-file',
-            dest='network_file', help='path to pretrained network parameters',
-            metavar='NETWORK_FILE')
-    parser.add_argument('--network-type',
-            dest='network_type', help='neural network model to use: vgg / sqz (default %(default)s)',
-            metavar='NETWORK_TYPE', default=NETWORK_TYPE)
-    parser.add_argument('--content-weight-blend', type=float,
-            dest='content_weight_blend', help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)',
-            metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND)
-    parser.add_argument('--content-weight', type=float,
-            dest='content_weight', help='content weight (default %(default)s)',
-            metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
-    parser.add_argument('--style-weight', type=float,
-            dest='style_weight', help='style weight (default %(default)s)',
-            metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
-    parser.add_argument('--style-layer-weight-exp', type=float,
-            dest='style_layer_weight_exp', help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)',
-            metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP)
-    parser.add_argument('--style-blend-weights', type=float,
-            dest='style_blend_weights', help='style blending weights',
-            nargs='+', metavar='STYLE_BLEND_WEIGHT')
-    parser.add_argument('--tv-weight', type=float,
-            dest='tv_weight', help='total variation regularization weight (default %(default)s)',
-            metavar='TV_WEIGHT', default=TV_WEIGHT)
-    parser.add_argument('--learning-rate', type=float,
-            dest='learning_rate', help='learning rate (default %(default)s)',
-            metavar='LEARNING_RATE', default=LEARNING_RATE)
-    parser.add_argument('--beta1', type=float,
-            dest='beta1', help='Adam: beta1 parameter (default %(default)s)',
-            metavar='BETA1', default=BETA1)
-    parser.add_argument('--beta2', type=float,
-            dest='beta2', help='Adam: beta2 parameter (default %(default)s)',
-            metavar='BETA2', default=BETA2)
-    parser.add_argument('--eps', type=float,
-            dest='epsilon', help='Adam: epsilon parameter (default %(default)s)',
-            metavar='EPSILON', default=EPSILON)
-    parser.add_argument('--initial',
-            dest='initial', help='initial image',
-            metavar='INITIAL')
-    parser.add_argument('--initial-noiseblend', type=float,
-            dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
-            metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND)
-    parser.add_argument('--preserve-colors',
-            dest='preserve_colors', help='preserve colors of original content image, values: none/all/out/interm (default %(default)s)',
-            metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
-    parser.add_argument('--pooling',
-            dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
-            metavar='POOLING', default=POOLING)
-    parser.add_argument('--optim',
-            dest='optimizer', help='optimizer to minimize the loss: adam, lbfgs or cg (default %(default)s)',
-            metavar='OPTIMIZER', default=OPTIMIZER)
-    parser.add_argument('--max-hierarchy', type=int,
-            dest='max_hierarchy', help='maximum amount of downscaling steps to produce initial guess for the final step (default %(default)s)',
-            metavar='MAX_HIERARCHY', default=MAX_HIERARCHY)
-    parser.add_argument('--h-preserve-colors', action='store_true',
-            dest='h_preserve_colors', help='preserving colors for intermediate tiles for hierarchical style trasnfer (output colors are controlled by different key)')
-    parser.add_argument('--ashift', type=float,
-            dest='ashift', help='Activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)',
-            metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT)
-    parser.add_argument('--out-postfix',
-            dest='out_postfix', help='when the name is auto-generated, add custom postfix',
-            metavar='OUT_POSTFIX')
-            
-    return parser
+    ps = ArgumentParser()
+    ps.add_argument('--content',            dest='content', help='content image', metavar='CONTENT', required=True)
+    ps.add_argument('--styles',             dest='styles', help='one or more style images', nargs='+', metavar='STYLE', required=True)
+    ps.add_argument('--output',             dest='output', help='output path', metavar='OUTPUT')
+    ps.add_argument('--iterations',         dest='iterations', type=int, help='iterations (default %(default)s)', metavar='ITERATIONS', default=ITERATIONS)
+    ps.add_argument('--print-iterations',   dest='print_iterations', type=int, help='statistics printing frequency', metavar='PRINT_ITERATIONS')
+    ps.add_argument('--checkpoint-output',  dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg', metavar='OUTPUT', default=CHECKPOINT_OUTPUT)
+    ps.add_argument('--checkpoint-iterations', dest='checkpoint_iterations', type=int, help='checkpoint frequency', metavar='CHECKPOINT_ITERATIONS')
+    ps.add_argument('--width',              dest='width', type=int, help='output width', metavar='WIDTH')
+    ps.add_argument('--style-scales',       dest='style_scales', type=float, nargs='+', help='one or more style scales', metavar='STYLE_SCALE')
+    ps.add_argument('--network-file',       dest='network_file', help='path to pretrained network parameters', metavar='NETWORK_FILE')
+    ps.add_argument('--network-type',       dest='network_type', help='neural network model to use: vgg / sqz (default %(default)s)', metavar='NETWORK_TYPE', default=NETWORK_TYPE)
+    ps.add_argument('--content-weight-blend', dest='content_weight_blend', type=float, metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND,
+                                            help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)')
+    ps.add_argument('--content-weight',     dest='content_weight', type=float, help='content weight (default %(default)s)', metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
+    ps.add_argument('--style-weight',       dest='style_weight', type=float, help='style weight (default %(default)s)', metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
+    ps.add_argument('--style-layer-weight-exp', dest='style_layer_weight_exp', type=float, metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP,
+                                            help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)')
+    ps.add_argument('--style-blend-weights', dest='style_blend_weights', type=float, help='style blending weights', nargs='+', metavar='STYLE_BLEND_WEIGHT')
+    ps.add_argument('--tv-weight',          dest='tv_weight', type=float, help='total variation regularization weight (default %(default)s)', metavar='TV_WEIGHT', default=TV_WEIGHT)
+    ps.add_argument('--initial',            dest='initial', help='initial image', metavar='INITIAL')
+    ps.add_argument('--initial-noiseblend', dest='initial_noiseblend', type=float, metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND,
+                                            help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)')
+    ps.add_argument('--preserve-colors',    dest='preserve_colors', help='preserve colors of original content image, values: none/all/out/interm (default %(default)s)', metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
+    ps.add_argument('--pooling',            dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)', metavar='POOLING', default=POOLING)
+    ps.add_argument('--optim',              dest='optimizer', help='optimizer to minimize the loss: adam, lbfgs or cg (default %(default)s)', metavar='OPTIMIZER', default=OPTIMIZER)
+    ps.add_argument('--max-hierarchy',      dest='max_hierarchy', type=int, metavar='MAX_HIERARCHY', default=MAX_HIERARCHY,
+                                            help='maximum amount of downscaling steps to produce initial guess for the final step (default %(default)s)')
+    ps.add_argument('--h-preserve-colors',  dest='h_preserve_colors', action='store_true', help='preserving colors for intermediate tiles for hierarchical style trasnfer (output colors are controlled by different key)')
+    ps.add_argument('--ashift',             dest='ashift', type=float, metavar='ACTIVATION_SHIFT', default=ACTIVATION_SHIFT,
+                                            help='activation shift: Gram matrix is now (F+ashift)(F+ashift)^T (default %(default)s - matches old behavior)')
+    ps.add_argument('--out-postfix',        dest='out_postfix', help='when the name is auto-generated, add custom postfix', metavar='OUT_POSTFIX')
 
+    # Adam specific arguments
+    ps.add_argument('--learning-rate',      dest='learning_rate', type=float, help='learning rate (default %(default)s)', metavar='LEARNING_RATE', default=LEARNING_RATE)
+    ps.add_argument('--beta1',              dest='beta1', type=float, help='Adam: beta1 parameter (default %(default)s)', metavar='BETA1', default=BETA1)
+    ps.add_argument('--beta2',              dest='beta2', type=float, help='Adam: beta2 parameter (default %(default)s)', metavar='BETA2', default=BETA2)
+    ps.add_argument('--eps',                dest='epsilon', type=float, help='Adam: epsilon parameter (default %(default)s)', metavar='EPSILON', default=EPSILON)
+
+    
+    
+    return ps
 
 def main():
     parser = build_parser()
