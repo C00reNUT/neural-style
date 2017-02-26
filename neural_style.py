@@ -83,17 +83,18 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
 
+    content_basepath, content_filename = os.path.split(options.content)
+
+    style_basepaths = []
+    style_filenames = []
+    for style in options.styles:
+        basepath, filename = os.path.split(style)
+        style_basepaths.append(basepath)
+        style_filenames.append(filename)
+
     if options.output is None:
-        content_filename = options.content
-        content_filename_pos = options.content.rfind('\\')
-        if content_filename_pos != -1:
-            content_filename = options.content[content_filename_pos:]
-            
         # For now, only works with the first style
-        style_filename = options.styles[0]        
-        style_filename_pos = options.styles[0].rfind('\\')
-        if style_filename_pos != -1:
-            style_filename = options.styles[0][style_filename_pos:]
+        style_filename = style_filenames[0]
         
         out_stylewe = int(options.style_layer_weight_exp * 10)
         out_ashift = int(options.ashift)
