@@ -23,6 +23,7 @@ def build_parser():
     parser.add_argument('--stylized',   dest='stylized', help='one or more style images', metavar='STYLIZED')
     parser.add_argument('--output',     dest='output', help='output path',metavar='OUTPUT')
     parser.add_argument('--mode',       dest='mode', help='recombination mode: yuv/hsv (default %(default)s)', metavar='MODE', default=MODE)           
+    parser.add_argument('--content-path', dest='content_path', help='optional path to content images (by default uses input base path)')
     return parser
 
 
@@ -105,10 +106,8 @@ def main():
     options = parser.parse_args()
 
     if options.input is not None:
-        base_path_len = options.input.rfind('\\')
-        base_path = options.input[0:base_path_len+1]
-        processed = options.input[base_path_len+1:]
-        
+        base_path, processed = os.path.split(options.input)
+
         print("Path: %s, file: %s" % (base_path, processed))
 
         PREFIXES = ['tiles_', 't_']
@@ -131,27 +130,44 @@ def main():
         
         print("Content: %s\nStyle: %s" % (content_name, style_name))
         
-        original_image_path = content_name
+        if options.content_path is None:
+            content_image_path = os.path.join(base_path, content_name)
+        else:
+            content_image_path = options.content_path + content_name
+        
         styled_image_path = options.input
     else:
-        original_image_path = options.content
+        content_image_path = options.content
         styled_image_path = options.stylized
     
-    original_image = comimg.imread(original_image_path)
+    content_image = comimg.imread(content_image_path)
     styled_image = comimg.imread(styled_image_path)
 
+    content_image_size = (content_image.shape[1], content_image.shape[0])
+    styled_image_size = (styled_image.shape[1], styled_image.shape[0])
+    
+    collage_image = None
+    if content_image_size[1] != styled_image_size[1]:
+        collage_image = styled_image
+        styled_image = np.array(Image.fromarray(styled_image).crop((0, 0, content_image_size[0], content_image_size[1])))
+    
     luma_time = time.time()
-
+    
     suffix = '_pc'
     if options.mode == 'hsv':
         suffix = '_pchsv'
-        img_out = lumatransfer_hsv(original_image=original_image, styled_image=styled_image)
+        img_out = lumatransfer_hsv(original_image=content_image, styled_image=styled_image)
     else:
         suffix = '_pcyuv'
-        img_out = lumatransfer(original_image=original_image, styled_image=styled_image)
+        img_out = lumatransfer(original_image=content_image, styled_image=styled_image)
     
     print("Luma transfer time: %fs" % (time.time() - luma_time))
 
+    if collage_image is not None:
+        new_collage = Image.fromarray(collage_image)
+        new_collage.paste(Image.fromarray(img_out), (0, 0))
+        img_out = np.array(new_collage)
+    
     if options.output is not None:
         output_filename = options.output
     else:
