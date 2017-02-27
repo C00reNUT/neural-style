@@ -35,7 +35,7 @@ This implementation also has an option of switching between L-BFGS/CG/Adam optim
 
 ## SqueezeNet
 
-You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1. Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) - repository includes pre-trained weights without the classifier. If you want to get the full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezent] that has the converted TensorFlow SqueezeNet (conversion was done specifically for this project, but the classifier was added for the separate repository).
+You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1. Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) - repository includes pre-trained weights without the classifier. If you want to get the full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezenet] that has the converted TensorFlow SqueezeNet (conversion was done specifically for this project, but the classifier was added for the separate repository).
 
 Using SqueezeNet backend sometimes results in observable quality drop versus the VGG19 backend, but SqueezeNet offers about 2x decrease in optimization iteration time and about 2x decrease in GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained model is that small.
 
