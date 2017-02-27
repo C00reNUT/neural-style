@@ -18,21 +18,11 @@ MODE = 'yuv'
 
 def build_parser():
     parser = ArgumentParser()
-    parser.add_argument('--in',
-            dest='input', help='input image',
-            metavar='INPUT')
-    parser.add_argument('--content',
-            dest='content', help='content image',
-            metavar='CONTENT')
-    parser.add_argument('--stylized',
-            dest='stylized', help='one or more style images',
-            metavar='STYLIZED')
-    parser.add_argument('--output',
-            dest='output', help='output path',
-            metavar='OUTPUT')
-    parser.add_argument('--mode',
-            dest='mode', help='recombination mode: yuv/hsv (default %(default)s)',
-            metavar='MODE', default=MODE)           
+    parser.add_argument('--in',         dest='input', help='input image', metavar='INPUT')
+    parser.add_argument('--content',    dest='content', help='content image', metavar='CONTENT')
+    parser.add_argument('--stylized',   dest='stylized', help='one or more style images', metavar='STYLIZED')
+    parser.add_argument('--output',     dest='output', help='output path',metavar='OUTPUT')
+    parser.add_argument('--mode',       dest='mode', help='recombination mode: yuv/hsv (default %(default)s)', metavar='MODE', default=MODE)           
     return parser
 
 
