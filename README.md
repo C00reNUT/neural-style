@@ -23,7 +23,7 @@ splits the optimization procedure, which might negatively affect the convergence
 
 Some improvements of this implementation over vanilla ["A Neural Algorithm of Artistic Style"][paper_arxiv] paper:
 * Hierarchical style transfer (see `--max-hierarchy`)
-* Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch)
+* Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch), see detail on SqueezeNet below
 * Adjustable inter-layer weights (see `--style-layer-weight-exp`)
 * Adjustable pooling (use `--pooling`)
 * Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`)
@@ -33,6 +33,11 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
 
+## SqueezeNet
+
+You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1. Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) - repository includes pre-trained weights without the classifier. If you want to get the full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezent] that has the converted TensorFlow SqueezeNet (conversion was done specifically for this project, but the classifier was added for the separate repository).
+
+Using SqueezeNet backend sometimes results in observable quality drop versus the VGG19 backend, but SqueezeNet offers about 2x decrease in optimization iteration time and about 2x decrease in GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained model is that small.
 
 ## Running
 
@@ -120,3 +125,4 @@ Copyright (c) 2017 Andrey Voroshilov, 2015-2016 Anish Athalye. Released under GP
 [tf_ext_optimizer]: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/opt/python/training/external_optimizer.py
 [tf_ext_optimizer_test]: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/opt/python/training/external_optimizer_test.py
 [tf_ext_optimizer_help]: https://www.tensorflow.org/versions/r1.0/api_docs/python/contrib.opt/other_functions_and_classes#ScipyOptimizerInterface
+[tf_squeezenet]: https://github.com/avoroshilov/tf-squeezenet
