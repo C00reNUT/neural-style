@@ -21,6 +21,7 @@ def build_parser():
     parser.add_argument('--in',             dest='input', help='input file, should be of format tile_<content>_<style>*.jpg', metavar='INPUT', required=True)
     parser.add_argument('--mode',           dest='mode', help='mode to generate style preview, scale/crop/auto (default %(default)s)', metavar='MODE', default=MODE)
     parser.add_argument('--styles-path',    dest='styles_path', help='optional path to styles images (by default uses input base path)')
+    parser.add_argument('--content-path',   dest='content_path', help='optional path to content images (by default uses input base path)')
     return parser
 
 
@@ -139,7 +140,10 @@ def main():
     
     print("Content: %s\nStyle: %s" % (content_name, style_name))
     
-    content_image = comimg.imread(base_path + content_name)
+    if options.content_path is None:
+        content_image = comimg.imread(base_path + content_name)
+    else:
+        content_image = comimg.imread(options.content_path + content_name)
     
     if options.styles_path is None:
         style_image = comimg.imread(base_path + style_name)
