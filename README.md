@@ -39,6 +39,18 @@ You can select alternative style transfer backend (feature extractor) - SqueezeN
 
 Using SqueezeNet backend sometimes results in observable quality drop versus the VGG19 backend, but SqueezeNet offers about 2x decrease in optimization iteration time and about 2x decrease in GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained model is that small.
 
+## Extras
+
+In addition, this implementation offers some improvements that are not directly related to the optimization-based style transfer, but one might find them somewhat useful.
+
+### Color-preserving style transfer
+
+In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys et al. suggest several ways of keeping original colors from the content image on the resulting stylized image. This version of neural style transfer implements simplest approach of luminance transfer, and does this in two ways. First is simple luminance transfer (color channels from the YCbCr transform of content image into stylized image), and another one is hue transfer (hue channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) - all done as post-process after the style transfer. The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs. Supports collages (see below).
+
+### Collage building
+
+Collages are convenient way to view style transfer results. Collages are built automatically, but you can disable that with `--no-collage` command line argument of the `neural_style.py` script. The code for building collages are in the `build_collage.py`, could also be used as a standalone script, which builds collage from stylized, content and style images, given that the stylized image filename is auto-generated.
+
 ## Running
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
@@ -116,6 +128,7 @@ Copyright (c) 2017 Andrey Voroshilov, 2015-2016 Anish Athalye. Released under GP
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
 [paper_arxiv]: https://arxiv.org/abs/1508.06576
 [improv_paper_arxiv]: https://arxiv.org/abs/1605.04603
+[preserve_paper_arxiv]: https://arxiv.org/abs/1606.05897
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
 [ad]: https://en.wikipedia.org/wiki/Automatic_differentiation
