@@ -49,19 +49,36 @@ SQUEEZENET_LAYERS = (
     'fire9/concat',
 )
 
+STYLE_POSTFIX1 = '_actv'
+
 CONTENT_LAYERS = (
     'conv1_actv',
-    'fire2/squeeze1x1_actv',
-    'fire3/squeeze1x1_actv',
-    'fire4/squeeze1x1_actv',
-    'fire5/squeeze1x1_actv',
-    'fire6/squeeze1x1_actv',
-    'fire7/squeeze1x1_actv',
-    'fire8/squeeze1x1_actv',
-    'fire9/squeeze1x1_actv'
+    'fire2/expand1x1' + STYLE_POSTFIX1,
+    'fire2/expand3x3' + STYLE_POSTFIX1,
+    #'fire2/concat_conc',
+    'fire3/expand1x1' + STYLE_POSTFIX1,
+    'fire3/expand3x3' + STYLE_POSTFIX1,
+    #'fire3/concat_conc',
+    'fire4/expand1x1' + STYLE_POSTFIX1,
+    'fire4/expand3x3' + STYLE_POSTFIX1,
+    #'fire4/concat_conc',
+    'fire5/expand1x1' + STYLE_POSTFIX1,
+    'fire5/expand3x3' + STYLE_POSTFIX1,
+    #'fire5/concat_conc',
+    'fire6/expand1x1' + STYLE_POSTFIX1,
+    'fire6/expand3x3' + STYLE_POSTFIX1,
+    #'fire6/concat_conc',
+    'fire7/expand1x1' + STYLE_POSTFIX1,
+    'fire7/expand3x3' + STYLE_POSTFIX1,
+    #'fire7/concat_conc',
+    'fire8/expand1x1' + STYLE_POSTFIX1,
+    'fire8/expand3x3' + STYLE_POSTFIX1,
+    #'fire8/concat_conc',
+    'fire9/expand1x1' + STYLE_POSTFIX1,
+    'fire9/expand3x3' + STYLE_POSTFIX1,
+    #'fire9/concat_conc',
     )
 
-STYLE_POSTFIX1 = '_actv'
 STYLE_LAYERS = (
     'conv1_actv',
     'fire2/expand1x1' + STYLE_POSTFIX1,
