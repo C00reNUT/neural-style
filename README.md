@@ -48,8 +48,8 @@ Using SqueezeNet backend sometimes results in observable quality drop versus the
 
 Example pictures:
 
-![VGG19](examples/vgg.jpg =100x)
-![SqueezeNet v1.1](examples/sqz.jpg =100x)
+<img src="examples/vgg.jpg" alt="VGG19" style="width: 100px;"/>
+<img src="examples/sqz.jpg" alt="SqueezeNet v1.1" style="width: 100px;"/>
 
 (**left**: VGG19; **right**: SqueezeNet v1.1)
 
