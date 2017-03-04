@@ -42,6 +42,23 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
 
+## Hierarchical style transfer
+
+To improve low frequency features style transfer quality, as well as decrease time required
+to transfer style for a single image (esp. big image) - hierarchical style transfer was
+introduced. First, the style transfer happens at the lowest possible scale - the amount of
+downscaling steps is determined by `--max-hierarchy` command line setting or by the amount
+of downscaling steps needed for the smallest image to reach certain dimension size. In order
+to get vanilla style transfer, use `--max-hierarchy 1`.
+
+Example:
+
+<img src="examples/h3_0_0150x0206.jpg" alt="H-level 0" />
+
+<img src="examples/h3_1_0300x0412.jpg" alt="H-level 1" />
+
+<img src="examples/h3_2_0825x0600.jpg" alt="H-level 2, final image" />
+
 ## SqueezeNet
 
 You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1. Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) - repository includes pre-trained weights without the classifier. If you want to get the full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezenet] that has the converted TensorFlow SqueezeNet (conversion was done specifically for this project, but the classifier was added for the separate repository).
