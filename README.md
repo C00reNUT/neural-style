@@ -79,7 +79,7 @@ In addition, this implementation offers some improvements that are not directly 
 ### Color-preserving style transfer
 
 In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys et al. suggest several ways of keeping original colors from the content image on the resulting stylized image. This version of neural style transfer implements simplest approach of luminance transfer, and does this in two ways. First - is simple luminance transfer (color channels from the YCbCr transform of content image into stylized image), and another one is hue transfer (hue channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) - all done as post-process after the style transfer. Currently, the second way of color-preserving style transfer only available in a standalone script, as there is no mode selection command line argument in `neural_style.py`.
-The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs (color preserving post-processing doesn't require style transfer run if you already have stylized images). In standalone script, you can select mode by specifying iether `--mode yuv` or `--mode hsv`. Supports collages (see below).
+The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs (color preserving post-processing doesn't require style transfer run if you already have stylized images). In standalone script, you can select mode by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below).
 
 <img src="examples/vgg.jpg" alt="Original" width="810" />
 
@@ -88,7 +88,7 @@ The code is in `luma_transfer.py` script, this scrip also could be used as a sta
 
 (**left**: YCbCr luma transfer; **right**: HSV Saturation+Value transfer)
 
-As can be seen in the example, the YCbCr much more resembles the original photo, but HSV keeps more from the style trasnfer itself.
+As can be seen in the example, the YCbCr much more resembles the original photo, but HSV keeps more from the style transfer itself.
 
 ### Collage building
 
@@ -119,9 +119,9 @@ in range [0.0; 1.0].
 
 `--pooling` allows to select which pooling layers to use (specify either `max` or `avg`).
 Original VGG topology uses max pooling, but the [style transfer paper][paper] suggests
-replacing it with average pooling. The outputs are perceptually differnt, max pool in
-general tends to have finer detail style trasnfer, but could have troubles at
-lower-freqency detail level:
+replacing it with average pooling. The outputs are perceptually different, max pool in
+general tends to have finer detail style transfer, but could have troubles at
+lower-frequency detail level:
 
 ## Requirements
 
