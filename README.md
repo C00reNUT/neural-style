@@ -61,9 +61,17 @@ Example:
 
 ## SqueezeNet
 
-You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1. Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) - repository includes pre-trained weights without the classifier. If you want to get the full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezenet] that has the converted TensorFlow SqueezeNet (conversion was done specifically for this project, but the classifier was added for the separate repository).
+You can select alternative style transfer backend (feature extractor) - SqueezeNet v1.1.
+Since the pre-trained model is very small (~5MB full, and ~3MB without classifier) -
+repository includes pre-trained weights without the classifier. If you want to get the
+full pre-trained weights - you can follow to the [TF SqueezeNet repository][tf_squeezenet]
+that has the converted TensorFlow SqueezeNet (conversion was done specifically for this
+project, but the classifier was added for the separate repository).
 
-Using SqueezeNet backend sometimes results in observable quality drop versus the VGG19 backend, but SqueezeNet offers about 2x decrease in optimization iteration time and about 2x decrease in GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained model is that small.
+Using SqueezeNet backend sometimes results in observable quality drop versus the VGG19 backend,
+but SqueezeNet offers about 2x decrease in optimization iteration time and about 2x decrease in
+GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained
+model is that small.
 
 Example pictures:
 
@@ -78,8 +86,19 @@ In addition, this implementation offers some improvements that are not directly 
 
 ### Color-preserving style transfer
 
-In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys et al. suggest several ways of keeping original colors from the content image on the resulting stylized image. This version of neural style transfer implements simplest approach of luminance transfer, and does this in two ways. First - is simple luminance transfer (color channels from the YCbCr transform of content image into stylized image), and another one is hue transfer (hue channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) - all done as post-process after the style transfer. Currently, the second way of color-preserving style transfer only available in a standalone script, as there is no mode selection command line argument in `neural_style.py`.
-The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs (color preserving post-processing doesn't require style transfer run if you already have stylized images). In standalone script, you can select mode by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below).
+In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys
+et al. suggest several ways of keeping original colors from the content image on the resulting
+stylized image. This version of neural style transfer implements simplest approach of luminance
+transfer, and does this in two ways. First - is simple luminance transfer (color channels from
+the YCbCr transform of content image into stylized image), and another one is hue transfer (hue
+channel from the HSV transform of content image, plus min of saturations to avoid oversaturation)
+- all done as post-process after the style transfer. Currently, the second way of color-preserving
+style transfer only available in a standalone script, as there is no mode selection command line
+argument in `neural_style.py`.
+The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script,
+which takes stylized and content images as inputs (color preserving post-processing doesn't require
+style transfer run if you already have stylized images). In standalone script, you can select mode
+by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below).
 
 <img src="examples/vgg.jpg" alt="Original" width="810" />
 
@@ -92,7 +111,11 @@ As can be seen in the example, the YCbCr much more resembles the original photo,
 
 ### Collage building
 
-Collages are convenient way to view style transfer results. Collages are built automatically, but you can disable that with `--no-collage` command line argument of the `neural_style.py` script. The code for building collages are in the `build_collage.py`, could also be used as a standalone script, which builds collage from stylized, content and style images, given that the stylized image filename is auto-generated.
+Collages are convenient way to view style transfer results. Collages are built automatically, but
+you can disable that with `--no-collage` command line argument of the `neural_style.py` script. The
+code for building collages are in the `build_collage.py`, could also be used as a standalone script,
+which builds collage from stylized, content and style images, given that the stylized image filename
+is auto-generated.
 
 An example of such collage is the first image of this README file.
 
@@ -104,7 +127,8 @@ Run `python neural_style.py --help` to see a list of all options.
 
 Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint images.
 
-Use `--iterations` to change the number of iterations (default 1000).  For a 512×512 pixel content file, 1000 iterations take 2.5 minutes on a GeForce GTX Titan X GPU, or 90 minutes on an Intel Core i7-5930K CPU.
+Use `--iterations` to change the number of iterations (default 1000).  For a 512×512 pixel content file,
+1000 Adam iterations take 2.5 minutes on a GeForce GTX Titan X GPU, or 90 minutes on an Intel Core i7-5930K CPU.
 
 ## Tweaking
 
