@@ -24,7 +24,7 @@ splits the optimization procedure, which might negatively affect the convergence
 Here's a typical style transfer, most popular content (cat) + most popular style ("Starry Night"
 by Vincent van Gogh):
 
-![Collage: Starry Night Cat](examples/vgg_collage.jpg)
+<img src="examples/vgg_collage.jpg" alt="Collage: Starry Night Cat" width="600" />
 
 ## Improvements
 
@@ -48,8 +48,8 @@ Using SqueezeNet backend sometimes results in observable quality drop versus the
 
 Example pictures:
 
-<img src="examples/vgg.jpg" alt="VGG19" style="width: 100px;"/>
-<img src="examples/sqz.jpg" alt="SqueezeNet v1.1" style="width: 100px;"/>
+<img src="examples/vgg.jpg" alt="VGG19" width="400" />
+<img src="examples/sqz.jpg" alt="SqueezeNet v1.1" width="400" />
 
 (**left**: VGG19; **right**: SqueezeNet v1.1)
 
