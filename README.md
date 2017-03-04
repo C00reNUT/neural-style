@@ -59,11 +59,20 @@ In addition, this implementation offers some improvements that are not directly 
 
 ### Color-preserving style transfer
 
-In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys et al. suggest several ways of keeping original colors from the content image on the resulting stylized image. This version of neural style transfer implements simplest approach of luminance transfer, and does this in two ways. First is simple luminance transfer (color channels from the YCbCr transform of content image into stylized image), and another one is hue transfer (hue channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) - all done as post-process after the style transfer. The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs. Supports collages (see below).
+In the ["Preserving Color in Neural Artistic Style Transfer" paper][preserve_paper_arxiv], Gatys et al. suggest several ways of keeping original colors from the content image on the resulting stylized image. This version of neural style transfer implements simplest approach of luminance transfer, and does this in two ways. First is simple luminance transfer (color channels from the YCbCr transform of content image into stylized image), and another one is hue transfer (hue channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) - all done as post-process after the style transfer. The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script, which takes stylized and content images as inputs (color preserving post-processing doesn't require style transfer run if you already have stylized images). Supports collages (see below).
+
+<img src="examples/vgg_pcyuv.jpg" alt="YCbCr" width="400" />
+<img src="examples/vgg_pchsv.jpg" alt="HSV" width="400" />
+
+(**left**: YCbCr luma transfer; **right**: HSV Saturation+Value transfer)
+
+As can be seen in the example, the YCbCr much more resembles the original photo, but HSV keeps more from the style trasnfer itself.
 
 ### Collage building
 
 Collages are convenient way to view style transfer results. Collages are built automatically, but you can disable that with `--no-collage` command line argument of the `neural_style.py` script. The code for building collages are in the `build_collage.py`, could also be used as a standalone script, which builds collage from stylized, content and style images, given that the stylized image filename is auto-generated.
+
+An example of such collage is the first image of this README file.
 
 ## Running
 
