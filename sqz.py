@@ -117,19 +117,20 @@ def load_net(data_path):
             weights[name].append( kernels.astype(common.get_dtype_np()) )
             weights[name].append( bias.astype(common.get_dtype_np()) )
     
-    mean_pixel = np.array([104.006, 116.669, 122.679], dtype=common.get_dtype_np())
+    #mean_pixel = np.array([104.006, 116.669, 122.679], dtype=common.get_dtype_np())
+    mean_pixel = np.array([122.679, 116.669, 104.006], dtype=common.get_dtype_np())
     return weights, mean_pixel
 
 def preprocess(image, mean_pixel):
     swap_img = np.array(image)
-    image[:, :, 0] = swap_img[:, :, 2]
-    image[:, :, 2] = swap_img[:, :, 0]
+    #image[:, :, 0] = swap_img[:, :, 2]
+    #image[:, :, 2] = swap_img[:, :, 0]
     return image - mean_pixel
 
 def unprocess(image, mean_pixel):
     swap_img = np.array(image)
-    image[:, :, 0] = swap_img[:, :, 2]
-    image[:, :, 2] = swap_img[:, :, 0]
+    #image[:, :, 0] = swap_img[:, :, 2]
+    #image[:, :, 2] = swap_img[:, :, 0]
     return image + mean_pixel
 
 def get_weights_biases(preloaded, layer_name):
