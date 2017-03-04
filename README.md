@@ -91,8 +91,8 @@ et al. suggest several ways of keeping original colors from the content image on
 stylized image. This version of neural style transfer implements simplest approach of luminance
 transfer, and does this in two ways. First - is simple luminance transfer (color channels from
 the YCbCr transform of content image into stylized image), and another one is hue transfer (hue
-channel from the HSV transform of content image, plus min of saturations to avoid oversaturation)
-- all done as post-process after the style transfer. Currently, the second way of color-preserving
+channel from the HSV transform of content image, plus min of saturations to avoid oversaturation) -
+all done as post-process after the style transfer. Currently, the second way of color-preserving
 style transfer only available in a standalone script, as there is no mode selection command line
 argument in `neural_style.py`.
 The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script,
