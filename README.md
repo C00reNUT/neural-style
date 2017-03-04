@@ -26,6 +26,8 @@ by Vincent van Gogh):
 
 <img src="examples/vgg_collage.jpg" alt="Collage: Starry Night Cat" width="600" />
 
+The collage is built automatically using `build_collage.py`, see [collage building](#collage-building) section.
+
 ## Improvements
 
 Some improvements of this implementation over vanilla ["A Neural Algorithm of Artistic Style"][paper_arxiv] paper:
