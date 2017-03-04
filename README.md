@@ -32,10 +32,10 @@ The collage is built automatically using `build_collage.py`, see [collage buildi
 
 Some improvements of this implementation over vanilla ["A Neural Algorithm of Artistic Style"][paper_arxiv] paper:
 * Hierarchical style transfer (see `--max-hierarchy`)
-* Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch), see detail on SqueezeNet below
+* Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch), see details in [SqueezeNet section](#squeezenet) below
 * Adjustable inter-layer weights (see `--style-layer-weight-exp`)
 * Adjustable pooling (use `--pooling`)
-* Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`)
+* Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`, details in [Color-preserving style transfer](#color-preserving-style-transfer) section)
 * More layers to extract content and style from
 * Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
 
