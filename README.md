@@ -21,8 +21,8 @@ splits the optimization procedure, which might negatively affect the convergence
 
 ## Examples
 
-Here's a typical style transfer, most popular content (cat) + most popular style ("Starry Night"
-by Vincent van Gogh):
+Here's a typical style transfer, most popular content (cat) + most popular style
+("Starry Night" by Vincent van Gogh):
 
 <img src="examples/vgg_collage.jpg" alt="Collage: Starry Night Cat" width="600" />
 
@@ -76,6 +76,9 @@ but SqueezeNet offers about 2x decrease in optimization iteration time and about
 GPU memory consumption, so this could be a feasible tradeoff, especially given the pretrained
 model is that small.
 
+In order to select between backends, use `--network-type vgg` for VGG19 backend, or
+`--network-type sqz` for SqueezeNet v1.1 backend.
+
 Example pictures:
 
 <img src="examples/vgg.jpg" alt="VGG19" width="400" />
@@ -125,6 +128,12 @@ An example of such collage is the first image of this README file.
 ## Running
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
+It is not necessary to specify output filename via `--output`, as if this parameter is omitted,
+the script will generate one automatically, using the following format:
+`t_<content filename>_<style filename>_<transfer parameters>.jpg`
+and scripts such as `luma_transfer.py` or `build_collages.py` expect stylized images fed into them
+in similar format, so that they could automatically infer content image filename or style image
+filename, if it is required.
 
 Run `python neural_style.py --help` to see a list of all options.
 
@@ -148,7 +157,16 @@ in range [0.0; 1.0].
 Original VGG topology uses max pooling, but the [style transfer paper][paper] suggests
 replacing it with average pooling. The outputs are perceptually different, max pool in
 general tends to have finer detail style transfer, but could have troubles at
-lower-frequency detail level:
+lower-frequency detail level. When using hierarchical style transfer, you can safely use
+average pooling in almost any case.
+
+`--ashift` is a command line argument which allows to tweak activation shift, a technique
+described in [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv] paper.
+Experiments show, that quite big range of values could be used there, e.g. for abstract,
+style-heavy transfer, it was useful sometimes to set it to 1000; although in some cases it
+could produce artifacts - so a safe point for abstract style transfer would be value in range
+50-100. For content-heavy style transfer, smaller values (and sometimes, negative) could be
+useful.
 
 ## Requirements
 
@@ -157,6 +175,7 @@ lower-frequency detail level:
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
 * [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network` option.
+(not required if SqueezeNet v1.1 backend is used for style transfer).
 
 ## Citation
 
