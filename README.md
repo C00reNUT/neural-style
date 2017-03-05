@@ -184,8 +184,8 @@ Example of different tweaks applied to the same content/style image pair (cat+"S
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
-* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network` option.
-(not required if SqueezeNet v1.1 backend is used for style transfer).
+* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network-file` option.
+(Not required if SqueezeNet v1.1 backend is used for style transfer).
 
 ## Citation
 
