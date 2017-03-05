@@ -168,6 +168,14 @@ could produce artifacts - so a safe point for abstract style transfer would be v
 50-100. For content-heavy style transfer, smaller values (and sometimes, negative) could be
 useful.
 
+Example of different tweaks applied to the same content/style image pair (cat+"Starry Night"):
+
+<img src="examples/content_heavy.jpg" alt="Content-heavy" width="400" />
+<img src="examples/style_heavy.jpg" alt="Style-heavy" width="400" />
+
+(**left**: content-heavy transfer; **right**: style-heavy transfer)
+
+
 ## Requirements
 
 * [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
