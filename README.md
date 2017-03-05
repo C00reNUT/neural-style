@@ -49,10 +49,12 @@ This implementation also has an option of switching between L-BFGS/CG/Adam optim
 To improve low frequency features style transfer quality, as well as decrease time required
 to transfer style for a single image (esp. big image) - hierarchical style transfer was
 introduced.
+
 First, the style transfer happens at the lowest possible scale - the amount of
 downscaling steps is determined by `--max-hierarchy` command line setting or by the amount
 of downscaling steps needed for the smallest image to reach certain dimension size. In order
 to get vanilla style transfer, use `--max-hierarchy 1`.
+
 Then, the output - smallest stylized image - is upscaled, blended in with some white noise
 (if specified), and gets fed into the next hierarchical step as the initial guess.
 
@@ -103,6 +105,7 @@ channel from the HSV transform of content image, plus min of saturations to avoi
 all done as post-process after the style transfer. Currently, the second way of color-preserving
 style transfer only available in a standalone script, as there is no mode selection command line
 argument in `neural_style.py`.
+
 The code is in `luma_transfer.py` script, this scrip also could be used as a standalone script,
 which takes stylized and content images as inputs (color preserving post-processing doesn't require
 style transfer run if you already have stylized images). In standalone script, you can select mode
@@ -130,6 +133,7 @@ An example of such collage is the first image of this README file.
 ## Running
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
+
 It is not necessary to specify output filename via `--output`, as if this parameter is omitted,
 the script will generate one automatically, using the following format:
 `t_<content filename>_<style filename>_<transfer parameters>.jpg`
@@ -184,7 +188,7 @@ Example of different tweaks applied to the same content/style image pair (cat+"S
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
-* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network-file` option.
+* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network-file` option.<br />
 (Not required if SqueezeNet v1.1 backend is used for style transfer).
 
 ## Citation
