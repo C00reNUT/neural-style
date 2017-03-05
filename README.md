@@ -28,6 +28,8 @@ Here's a typical style transfer, most popular content (cat) + most popular style
 
 The collage is built automatically using `build_collage.py`, see [collage building](#collage-building) section.
 
+All example stylized pictures here are about the same size, you can view bigger versions by clicking on them, and original-sized images in `examples` folder.
+
 ## Improvements
 
 Some improvements of this implementation over vanilla ["A Neural Algorithm of Artistic Style"][paper_arxiv] paper:
