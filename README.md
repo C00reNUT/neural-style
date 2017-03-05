@@ -46,10 +46,13 @@ This implementation also has an option of switching between L-BFGS/CG/Adam optim
 
 To improve low frequency features style transfer quality, as well as decrease time required
 to transfer style for a single image (esp. big image) - hierarchical style transfer was
-introduced. First, the style transfer happens at the lowest possible scale - the amount of
+introduced.
+First, the style transfer happens at the lowest possible scale - the amount of
 downscaling steps is determined by `--max-hierarchy` command line setting or by the amount
 of downscaling steps needed for the smallest image to reach certain dimension size. In order
 to get vanilla style transfer, use `--max-hierarchy 1`.
+Then, the output - smallest stylized image - is upscaled, blended in with some white noise
+(if specified), and gets fed into the next hierarchical step as the initial guess.
 
 Example:
 
