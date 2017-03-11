@@ -95,7 +95,7 @@ Example pictures:
 
 By default, style loss function is calculated based on the Gram matrices of the layer activation maps,
 as it is described in the original paper. However there are alternative approaches, one of which was
-described by Justin Johnson (@jcjohnson) in one of the CS231n Stanford lectures. Instead of calculating
+described by Justin Johnson ([jcjohnson](https://github.com/jcjohnson)) in one of the CS231n Stanford lectures. Instead of calculating
 2D Gram matrices, one can calculate 1D vector of mean across activation map, and then use that to
 calculate the style loss function.
 
