@@ -22,7 +22,7 @@ except NameError:
     from functools import reduce
 
 def stylize(network_file, network_type, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
-        content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
+        content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, style_feat_type, tv_weight,
         learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
     """
@@ -45,6 +45,13 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
         net_module = sqz
     else:
         net_module = vgg
+    
+    STYLE_FEATURE_TYPES_GRAM = 0
+    STYLE_FEATURE_TYPES_MEAN = 1
+
+    style_features_type = STYLE_FEATURE_TYPES_GRAM
+    if style_feat_type == 'mean':
+        style_features_type = STYLE_FEATURE_TYPES_MEAN
     
     CONTENT_LAYERS = net_module.get_content_layers()
     STYLE_LAYERS = net_module.get_style_layers()
@@ -100,10 +107,15 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
-                # activation shift
-                features += np.full(features.shape, common.get_dtype_np()(activation_shift))
-                gram = np.matmul(features.T, features) / features.size
-                style_features[i][layer] = gram
+                if style_features_type == STYLE_FEATURE_TYPES_GRAM:
+                    # Gram matrix
+                    # activation shift
+                    features += np.full(features.shape, common.get_dtype_np()(activation_shift))
+                    gram = np.matmul(features.T, features) / features.size
+                    style_features[i][layer] = gram
+                elif style_features_type == STYLE_FEATURE_TYPES_MEAN:
+                    # Averaging
+                    style_features[i][layer] = np.mean(features, axis=0)# / features.size
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
                 
@@ -141,11 +153,18 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 _, height, width, number = map(lambda i: i.value, layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
-                # activation shift
-                feats += tf.fill(feats.get_shape(), tf.cast(activation_shift, common.get_dtype_tf()))
-                gram = tf.matmul(tf.transpose(feats), feats) / size
-                style_gram = style_features[i][style_layer]
-                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                if style_features_type == STYLE_FEATURE_TYPES_GRAM:
+                    # Gram matrix
+                    # activation shift
+                    feats += tf.fill(feats.get_shape(), tf.cast(activation_shift, common.get_dtype_tf()))
+                    gram = tf.matmul(tf.transpose(feats), feats) / size
+                    style_gram = style_features[i][style_layer]
+                    style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                elif style_features_type == STYLE_FEATURE_TYPES_MEAN:
+                    # Averaging
+                    style_target_features = style_features[i][style_layer]
+                    style_current_features = tf.reduce_mean(feats, axis=0)
+                    style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(style_current_features - style_target_features))
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
         # total variation denoising

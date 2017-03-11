@@ -36,6 +36,7 @@ INITIAL_NOISEBLEND = 0.0
 ACTIVATION_SHIFT = 0.0
 PRESERVE_COLORS = 'none'
 NETWORK_TYPE = 'vgg'
+STYLE_FEATURE_TYPE = 'gram'
 
 def build_parser():
     ps = ArgumentParser()
@@ -57,6 +58,7 @@ def build_parser():
     ps.add_argument('--style-layer-weight-exp', dest='style_layer_weight_exp', type=float, metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP,
                                             help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)')
     ps.add_argument('--style-blend-weights', dest='style_blend_weights', type=float, help='style blending weights', nargs='+', metavar='STYLE_BLEND_WEIGHT')
+    ps.add_argument('--style-feat-type',    dest='style_feat_type', help='style feature type, \'gram\' or \'mean\' (default %(default)s)', metavar='STYLE_FEATURE_TYPE', default=STYLE_FEATURE_TYPE)
     ps.add_argument('--tv-weight',          dest='tv_weight', type=float, help='total variation regularization weight (default %(default)s)', metavar='TV_WEIGHT', default=TV_WEIGHT)
     ps.add_argument('--initial',            dest='initial', help='initial image', metavar='INITIAL')
     ps.add_argument('--initial-noiseblend', dest='initial_noiseblend', type=float, metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND,
@@ -106,8 +108,12 @@ def main():
         postfix = ""
         if options.out_postfix is not None:
             postfix = "_" + options.out_postfix
-            
-        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, postfix)
+
+        out_sft = ""
+        if options.style_feat_type != 'gram':
+            out_sft = "_" + options.style_feat_type
+        
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, postfix)
         
         print("Using auto-generated output filename: %s" % (options.output))
 
@@ -241,6 +247,7 @@ def main():
             style_weight=options.style_weight,
             style_layer_weight_exp=options.style_layer_weight_exp,
             style_blend_weights=style_blend_weights,
+            style_feat_type=options.style_feat_type,
             tv_weight=options.tv_weight,
             learning_rate=options.learning_rate,
             beta1=options.beta1,
