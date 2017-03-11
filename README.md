@@ -40,6 +40,7 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 * Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`, details in [Color-preserving style transfer](#color-preserving-style-transfer) section)
 * More layers to extract content and style from
 * Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
+* Different style feature extraction, in addition to Gram matrices calculation, see [Style feature extraction section](#style-feature-extraction)
 
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
@@ -89,6 +90,24 @@ Example pictures:
 <img src="examples/sqz.jpg" alt="SqueezeNet v1.1" width="400" />
 
 (**left**: VGG19; **right**: SqueezeNet v1.1)
+
+## Style feature extraction
+
+By default, style loss function is calculated based on the Gram matrices of the layer activation maps,
+as it is described in the original paper. However there are alternative approaches, one of which was
+described by Justin Johnson (@jcjohnson) in one of the CS231n Stanford lectures. Instead of calculating
+2D Gram matrices, one can calculate 1D vector of mean across activation map, and then use that to
+calculate the style loss function.
+
+This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
+
+<img src="examples/vgg.jpg" alt="VGG19 Gram" width="400" />
+<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="400" />
+
+(**left**: Gram matrix based style loss; **right**: mean activation map based style loss)
+
+Generally, the mean activation alternative is ~20% faster, but (probably subjectively) produces slightly
+worse results than the default Gram-based style loss.
 
 ## Extras
 
