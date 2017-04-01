@@ -26,6 +26,74 @@ def build_parser():
     parser.add_argument('--content-path', dest='content_path', help='optional path to content images (by default uses input base path)')
     return parser
 
+def histmatch_binned_ch(source_channel, reference_channel, num_bins=64):
+    #Histogram matching steps:
+    # 1. Calculate histogram for source and reference channels
+    # 2. Calculate Cumulative Distribution Functions (CDFs) based on the histograms
+    # 3. Map Source channel values to the CDF space using bins and calculated Source CDF
+    #       if number of bins is lower than 256, use interpolation
+    # 4. Map values from CDF space to the channel values, using Reference CDF
+  
+    src_ch_flatten = source_channel.ravel()
+    ref_ch_flatten = reference_channel.ravel()
+    
+    # 1. Calculate histograms
+    src_hist, src_hist_bins = np.histogram(src_ch_flatten, bins=num_bins, range=None, density=False)
+    ref_hist, ref_hist_bins = np.histogram(ref_ch_flatten, bins=num_bins, range=None, density=False)
+
+    # 2. Calculate normalized Cumulative Distribution Functions
+    src_cdf = np.cumsum(src_hist).astype(np.float32)
+    src_cdf *= 255.0 / src_cdf[-1]
+
+    ref_cdf = np.cumsum(ref_hist).astype(np.float32)
+    ref_cdf *= 255.0 / ref_cdf[-1]
+
+    # 3. Source image channel values to the histogram CDF
+    src_to_cdf = np.interp(src_ch_flatten, src_hist_bins[:-1], src_cdf)
+    # 4. Histogram CDF to reference channel values
+    cdf_to_ref = np.interp(src_to_cdf, ref_cdf, ref_hist_bins[:-1])
+    
+    return np.clip(cdf_to_ref, 0, 255).reshape(source_channel.shape)
+    
+def histmatch_ch(source_channel, reference_channel):
+    #Histogram matching steps:
+    # 1. Calculate histogram for source and reference channels
+    # 2. Calculate Cumulative Distribution Functions (CDFs) based on the histograms
+    # 3. Map Source channel values to the CDF space using bins and calculated Source CDF
+    # 4. Map values from CDF space to the channel values, using Reference CDF
+   
+    src_ch_flatten = source_channel.ravel()
+    ref_ch_flatten = reference_channel.ravel()
+    
+    # 1. Calculate histograms
+    src_hist, _ = np.histogram(src_ch_flatten, bins=256, range=None, density=False)
+    ref_hist, _ = np.histogram(ref_ch_flatten, bins=256, range=None, density=False)
+
+    # 2. Calculate normalized Cumulative Distribution Functions
+    src_cdf = np.cumsum(src_hist).astype(np.float32)
+    src_cdf *= 255.0 / src_cdf[-1]
+
+    ref_cdf = np.cumsum(ref_hist).astype(np.float32)
+    ref_cdf *= 255.0 / ref_cdf[-1]
+
+    # 3. Source image channel values to the histogram CDF
+    src_to_cdf = src_ch_flatten
+    src_to_cdf[...] = src_cdf[src_ch_flatten[...]]
+    # 4. Histogram CDF to reference channel values
+    cdf_to_ref = src_to_cdf
+    cdf_to_ref[...] = np.clip(np.searchsorted(ref_cdf, src_to_cdf[...]) - 1, 0, 255)
+    
+    return cdf_to_ref.reshape(source_channel.shape)
+    
+def histmatch(original_image, styled_image):
+    w, h, _ = original_image.shape
+    img_out = np.empty((w, h, 3), dtype=np.uint8)
+
+    for ch in range(3):
+        img_out[..., ch] = histmatch_ch(styled_image[..., ch], original_image[..., ch])
+   
+    return img_out
+
 
 def lumatransfer(original_image, styled_image):
     #The luminosity transfer steps:
@@ -157,6 +225,9 @@ def main():
     if options.mode == 'hsv':
         suffix = '_pchsv'
         img_out = lumatransfer_hsv(original_image=content_image, styled_image=styled_image)
+    elif options.mode == 'hist':
+        suffix = '_pchist'
+        img_out = histmatch(original_image=content_image, styled_image=styled_image)
     else:
         suffix = '_pcyuv'
         img_out = lumatransfer(original_image=content_image, styled_image=styled_image)
