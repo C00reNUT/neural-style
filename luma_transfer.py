@@ -163,6 +163,15 @@ def lumatransfer_hsv(original_image, styled_image):
 
     return img_out    
 
+def colortransfer(original_image, styled_image, mode='yuv'):
+    if mode == 'hsv':
+        return lumatransfer_hsv(original_image=original_image, styled_image=styled_image)
+    elif mode == 'hist':
+        return histmatch(original_image=original_image, styled_image=styled_image)
+    else:
+        return lumatransfer(original_image=original_image, styled_image=styled_image)
+    
+
 def rgb2gray(rgb):
     # Rec.601 luma
     #return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
@@ -230,13 +239,12 @@ def main():
     suffix = '_pc'
     if options.mode == 'hsv':
         suffix = '_pchsv'
-        img_out = lumatransfer_hsv(original_image=content_image, styled_image=styled_image)
     elif options.mode == 'hist':
         suffix = '_pchist'
-        img_out = histmatch(original_image=content_image, styled_image=styled_image)
     else:
         suffix = '_pcyuv'
-        img_out = lumatransfer(original_image=content_image, styled_image=styled_image)
+        
+    img_out = colortransfer(original_image=content_image, styled_image=styled_image, mode=options.mode)
     
     print("Luma transfer time: %fs" % (time.time() - luma_time))
 

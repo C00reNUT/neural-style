@@ -13,7 +13,7 @@ from sys import stderr
 
 from PIL import Image
 
-from luma_transfer import lumatransfer
+from luma_transfer import colortransfer
 import common
 
 try:
@@ -302,7 +302,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                     img_out = net_module.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
                     
                     if preserve_colors_coeff and preserve_colors_coeff != 0.0:
-                        img_out_pc = lumatransfer(original_image=np.clip(content, 0, 255), styled_image=np.clip(img_out, 0, 255))
+                        img_out_pc = colortransfer(original_image=np.clip(content, 0, 255), styled_image=np.clip(img_out, 0, 255), mode='yuv')
                         if preserve_colors_coeff == 1.0:
                             img_out = img_out_pc
                         else:
