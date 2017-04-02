@@ -86,7 +86,7 @@ def histmatch_ch(source_channel, reference_channel):
     return cdf_to_ref.reshape(source_channel.shape)
     
 def histmatch(original_image, styled_image):
-    w, h, _ = original_image.shape
+    w, h, _ = styled_image.shape
     img_out = np.empty((w, h, 3), dtype=np.uint8)
 
     for ch in range(3):
@@ -102,6 +102,9 @@ def lumatransfer(original_image, styled_image):
     # 3. Convert original image into YUV (YCbCr)
     # 4. Recombine (stylizedYUV.Y, originalYUV.U, originalYUV.V)
     # 5. Convert recombined image from YUV back to RGB
+    
+    if original_image.shape != styled_image.shape:
+        original_image = scipy.misc.imresize(original_image, styled_image.shape)
     
     perform_grayscale = False
     if perform_grayscale == True:
@@ -136,6 +139,9 @@ def lumatransfer_hsv(original_image, styled_image):
     # 3. Recombine (originalHSV.H, element-min(originalHSV.s, stylizedHSV.S), stylizedHSV.V), BUT
     #   element-wise minimum for S is needed to avoid oversaturation
     # 4. Convert recombined image from HSV back to RGB
+
+    if original_image.shape != styled_image.shape:
+        original_image = scipy.misc.imresize(original_image, styled_image.shape)
     
     # 1
     styled_hsv = np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('HSV') )
@@ -215,7 +221,7 @@ def main():
     styled_image_size = (styled_image.shape[1], styled_image.shape[0])
     
     collage_image = None
-    if content_image_size[1] != styled_image_size[1]:
+    if content_image_size[0] == styled_image_size[0] and math.fabs(content_image_size[1]*1.5 - styled_image_size[1]) < 2.0:
         collage_image = styled_image
         styled_image = np.array(Image.fromarray(styled_image).crop((0, 0, content_image_size[0], content_image_size[1])))
     
