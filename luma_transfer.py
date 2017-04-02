@@ -248,7 +248,7 @@ def main():
     if options.output is not None:
         output_filename = options.output
     else:
-        output_filename = comimg.add_suffix_filename(options.input, suffix)
+        output_filename = comimg.add_suffix_filename(styled_image_path, suffix)
     print("Out: %s" % (output_filename))
     comimg.imsave(output_filename, img_out)
     
