@@ -63,7 +63,7 @@ def build_parser():
     ps.add_argument('--initial',            dest='initial', help='initial image', metavar='INITIAL')
     ps.add_argument('--initial-noiseblend', dest='initial_noiseblend', type=float, metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND,
                                             help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)')
-    ps.add_argument('--preserve-colors',    dest='preserve_colors', help='preserve colors of original content image, values: none/all/out/interm (default %(default)s)', metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
+    ps.add_argument('--preserve-colors',    dest='preserve_colors', help='preserve colors of original content image, values: none/before/all/out/interm (default %(default)s)', metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
     ps.add_argument('--pooling',            dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)', metavar='POOLING', default=POOLING)
     ps.add_argument('--optim',              dest='optimizer', help='optimizer to minimize the loss: adam, lbfgs or cg (default %(default)s)', metavar='OPTIMIZER', default=OPTIMIZER)
     ps.add_argument('--max-hierarchy',      dest='max_hierarchy', type=int, metavar='MAX_HIERARCHY', default=MAX_HIERARCHY,
@@ -113,7 +113,14 @@ def main():
         if options.style_feat_type != 'gram':
             out_sft = "_" + options.style_feat_type
         
-        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, postfix)
+        out_preserve = ""
+        if options.preserve_colors != 'none':
+            if options.preserve_colors == 'before':
+                out_preserve = "_bpc"
+            else:
+                out_preserve = "_pc"
+        
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, out_preserve, postfix)
         
         print("Using auto-generated output filename: %s" % (options.output))
 
@@ -241,6 +248,7 @@ def main():
 #            styles=style_images,
             styles=h_style_images,
             preserve_colors_coeff=h_preserve_colors_coeff,
+            preserve_colors_prior=(options.preserve_colors=='before'),
             iterations=iter,
             content_weight=options.content_weight,
             content_weight_blend=options.content_weight_blend,

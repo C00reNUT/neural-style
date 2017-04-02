@@ -21,7 +21,7 @@ try:
 except NameError:
     from functools import reduce
 
-def stylize(network_file, network_type, initial, initial_noiseblend, content, styles, preserve_colors_coeff, iterations,
+def stylize(network_file, network_type, initial, initial_noiseblend, content, styles, preserve_colors_coeff, preserve_colors_prior, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, style_feat_type, tv_weight,
         learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
@@ -40,6 +40,13 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     style_shapes = [(1,) + style.shape for style in styles]
     content_features = {}
     style_features = [{} for _ in styles]
+
+    if preserve_colors_prior == True:
+        style_cnt = 0
+        for i in range(len(styles)):
+            styles[i] = colortransfer(content, styles[i], 'hsv')
+            Image.fromarray(styles[i]).save("precolor_style%d.jpg" % (style_cnt), quality=95)
+            style_cnt += 1
 
     if network_type == 'sqz':
         net_module = sqz
