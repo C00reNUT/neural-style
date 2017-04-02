@@ -66,8 +66,8 @@ def histmatch_ch(source_channel, reference_channel):
     ref_ch_flatten = reference_channel.ravel()
     
     # 1. Calculate histograms
-    src_hist, _ = np.histogram(src_ch_flatten, bins=256, range=None, density=False)
-    ref_hist, _ = np.histogram(ref_ch_flatten, bins=256, range=None, density=False)
+    src_hist, _ = np.histogram(src_ch_flatten, bins=256, range=(0.0, 255.0), density=False)
+    ref_hist, _ = np.histogram(ref_ch_flatten, bins=256, range=(0.0, 255.0), density=False)
 
     # 2. Calculate normalized Cumulative Distribution Functions
     src_cdf = np.cumsum(src_hist).astype(np.float32)
