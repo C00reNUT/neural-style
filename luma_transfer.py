@@ -85,12 +85,21 @@ def histmatch_ch(source_channel, reference_channel):
     
     return cdf_to_ref.reshape(source_channel.shape)
     
-def histmatch(original_image, styled_image):
+def histmatch(original_image, styled_image, hsv=True):
     w, h, _ = styled_image.shape
     img_out = np.empty((w, h, 3), dtype=np.uint8)
 
-    for ch in range(3):
-        img_out[..., ch] = histmatch_ch(styled_image[..., ch], original_image[..., ch])
+    if hsv:
+        styled_hsv = np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('HSV') )
+        original_hsv = np.array( Image.fromarray(original_image.astype(np.uint8)).convert('HSV') )
+
+        for ch in range(3):
+            img_out[..., ch] = histmatch_ch(styled_hsv[..., ch], original_hsv[..., ch])
+       
+        img_out = np.array( Image.fromarray(img_out, 'HSV').convert('RGB') )
+    else:
+        for ch in range(3):
+            img_out[..., ch] = histmatch_ch(styled_image[..., ch], original_image[..., ch])
    
     return img_out
 
