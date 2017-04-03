@@ -141,6 +141,65 @@ def lumatransfer(original_image, styled_image):
 
     return img_out
 
+def lumatransfer_distr(original_image, styled_image):
+    #The luminosity transfer steps:
+    # 1. Convert stylized image into HSV
+    # 2. Convert original image into HSV
+    # 3. Recombine (originalHSV.H, element-min(originalHSV.s, stylizedHSV.S), stylizedHSV.V), BUT
+    #   element-wise minimum for S is needed to avoid oversaturation
+    # 4. Convert recombined image from HSV back to RGB
+
+    if original_image.shape != styled_image.shape:
+        original_image = scipy.misc.imresize(original_image, styled_image.shape)
+    
+    hsv = True
+    if hsv:
+        # 1
+        styled_hsv = np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('HSV') )
+
+        # 2
+        original_hsv = np.array( Image.fromarray(original_image.astype(np.uint8)).convert('HSV') )
+        
+        distr_styled = []
+        distr_orig = []
+        for ch in range(3):
+            distr_styled.append( ( np.mean(styled_hsv[..., ch]), np.std(styled_hsv[..., ch]) ) )
+            distr_orig.append( ( np.mean(original_hsv[..., ch]), np.std(original_hsv[..., ch]) ) )
+        
+        # 3
+        w, h, _ = original_image.shape
+        combined_hsv = np.empty((w, h, 3), dtype=np.float32)
+        
+        for ch in range(3):
+            combined_hsv[..., ch] = (distr_orig[ch][1] / distr_styled[ch][1]) * (styled_hsv[..., ch].astype(np.float32) - distr_styled[ch][0]) + distr_orig[ch][0] # HSV
+        
+        # 4
+        img_out = np.array( Image.fromarray(np.clip(combined_hsv, 0, 255).astype(np.uint8), 'HSV').convert('RGB') )
+    else:
+        # 1
+        styled_hsv = styled_image#np.array( Image.fromarray(styled_image.astype(np.uint8)).convert('HSV') )
+
+        # 2
+        original_hsv = original_image#np.array( Image.fromarray(original_image.astype(np.uint8)).convert('HSV') )
+        
+        distr_styled = []
+        distr_orig = []
+        for ch in range(3):
+            distr_styled.append( ( np.mean(styled_hsv[..., ch]), np.std(styled_hsv[..., ch]) ) )
+            distr_orig.append( ( np.mean(original_hsv[..., ch]), np.std(original_hsv[..., ch]) ) )
+        
+        # 3
+        w, h, _ = original_image.shape
+        combined_hsv = np.empty((w, h, 3), dtype=np.float32)
+        
+        for ch in range(3):
+            combined_hsv[..., ch] = (distr_orig[ch][1] / distr_styled[ch][1]) * (styled_hsv[..., ch].astype(np.float32) - distr_styled[ch][0]) + distr_orig[ch][0] # HSV
+        
+        # 4
+        img_out = np.clip(combined_hsv, 0, 255).astype(np.uint8)#np.array( Image.fromarray(combined_hsv, 'HSV').convert('RGB') )
+
+    return img_out 
+
 def lumatransfer_hsv(original_image, styled_image):
     #The luminosity transfer steps:
     # 1. Convert stylized image into HSV
