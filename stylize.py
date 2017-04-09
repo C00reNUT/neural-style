@@ -119,7 +119,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 features = np.reshape(features, (-1, features.shape[3]))
                 
                 if distribution_loss:
-                    style_distr[i][layer] = (np.mean(features, axis=0), np.std(features, axis=0))
+                    style_distr[i][layer] = (np.mean(features, axis=0), np.var(features, axis=0))
                 
                 if style_features_type == STYLE_FEATURE_TYPES_GRAM:
                     # Gram matrix
