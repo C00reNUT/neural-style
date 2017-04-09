@@ -20,6 +20,7 @@ from argparse import ArgumentParser
 CONTENT_WEIGHT = 5e0
 CONTENT_WEIGHT_BLEND = 1
 STYLE_WEIGHT = 5e2
+STYLE_DISTR_WEIGHT = 0
 TV_WEIGHT = 1e2
 STYLE_LAYER_WEIGHT_EXP = 1
 LEARNING_RATE = 1e1
@@ -55,6 +56,7 @@ def build_parser():
                                             help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)')
     ps.add_argument('--content-weight',     dest='content_weight', type=float, help='content weight (default %(default)s)', metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
     ps.add_argument('--style-weight',       dest='style_weight', type=float, help='style weight (default %(default)s)', metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
+    ps.add_argument('--style-distr-weight', dest='style_distr_weight', type=float, help='style distribution weight (default %(default)s)', metavar='STYLE_DISTR_WEIGHT', default=STYLE_DISTR_WEIGHT)
     ps.add_argument('--style-layer-weight-exp', dest='style_layer_weight_exp', type=float, metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP,
                                             help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)')
     ps.add_argument('--style-blend-weights', dest='style_blend_weights', type=float, help='style blending weights', nargs='+', metavar='STYLE_BLEND_WEIGHT')
@@ -120,7 +122,12 @@ def main():
             else:
                 out_preserve = "_pc"
         
-        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d_swe%02d_cwe%02d_as%03d_%s%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, out_preserve, postfix)
+        out_distr_weight = ""
+        if options.style_distr_weight != 0.0:
+            out_distr_weight = "_sdw%03d" % (int(options.style_distr_weight))
+        
+        
+        options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d%s_swe%02d_cwe%02d_as%03d_%s%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_distr_weight, out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, out_preserve, postfix)
         
         print("Using auto-generated output filename: %s" % (options.output))
 
@@ -253,6 +260,7 @@ def main():
             content_weight=options.content_weight,
             content_weight_blend=options.content_weight_blend,
             style_weight=options.style_weight,
+            style_distr_weight=options.style_distr_weight,
             style_layer_weight_exp=options.style_layer_weight_exp,
             style_blend_weights=style_blend_weights,
             style_feat_type=options.style_feat_type,

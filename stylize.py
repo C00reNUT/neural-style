@@ -22,7 +22,7 @@ except NameError:
     from functools import reduce
 
 def stylize(network_file, network_type, initial, initial_noiseblend, content, styles, preserve_colors_coeff, preserve_colors_prior, iterations,
-        content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, style_feat_type, tv_weight,
+        content_weight, content_weight_blend, style_weight, style_distr_weight, style_layer_weight_exp, style_blend_weights, style_feat_type, tv_weight,
         learning_rate, beta1, beta2, epsilon, ashift, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
     """
@@ -35,11 +35,14 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     :rtype: iterator[tuple[int|None,image]]
     """
     activation_shift = ashift
+
+    distribution_loss = (style_distr_weight != 0.0)
     
     shape = (1,) + content.shape
     style_shapes = [(1,) + style.shape for style in styles]
     content_features = {}
     style_features = [{} for _ in styles]
+    style_distr = [{} for _ in styles]
 
     if preserve_colors_prior == True:
         style_cnt = 0
@@ -114,6 +117,10 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
+                
+                if distribution_loss:
+                    style_distr[i][layer] = (np.mean(features, axis=0), np.std(features, axis=0))
+                
                 if style_features_type == STYLE_FEATURE_TYPES_GRAM:
                     # Gram matrix
                     # activation shift
@@ -155,11 +162,26 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
         style_loss = 0
         for i in range(len(styles)):
             style_losses = []
+            style_distr_loss = 0
             for style_layer in STYLE_LAYERS:
                 layer = net[style_layer]
                 _, height, width, number = map(lambda i: i.value, layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
+
+                if distribution_loss:
+                    print("Style Layer: %s" % (style_layer))
+                
+                    style_target_distr = style_distr[i][style_layer]
+                    cur_distr = (tf.nn.moments(feats, axes=[0]))
+                    
+                    feats_shape = feats.get_shape()
+                    distr_losses = []
+                    
+                    EPS = 1e-5
+                    feats_delta = feats - tf.add(tf.multiply(tf.div(style_target_distr[1], cur_distr[1] + tf.fill(cur_distr[1].get_shape(), EPS)), tf.subtract(feats, cur_distr[0])), style_target_distr[0])
+                    style_distr_loss += style_distr_weight * tf.nn.l2_loss(feats_delta) / tf.cast(feats_shape[0] * feats_shape[1], common.get_dtype_tf())
+                    
                 if style_features_type == STYLE_FEATURE_TYPES_GRAM:
                     # Gram matrix
                     # activation shift
@@ -172,7 +194,10 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                     style_target_features = style_features[i][style_layer]
                     style_current_features = tf.reduce_mean(feats, axis=0)
                     style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(style_current_features - style_target_features))
+
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
+            if distribution_loss:
+                style_loss += style_distr_loss
 
         # total variation denoising
         tv_y_size = _tensor_size(image[:,1:,:,:])
