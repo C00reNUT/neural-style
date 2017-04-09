@@ -164,7 +164,7 @@ def main():
         parser.error("To save intermediate images, the checkpoint output "
                      "parameter must contain `%s` (e.g. `foo%s.jpg`)")
 
-    print(">>> OUTPUT: %s" % (options.output))
+    print("\n>>> OUTPUT: %s\n" % (options.output))
 
     total_time = time.time()
     
