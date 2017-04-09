@@ -223,7 +223,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
         if optimizer == 'adam':
             print("Using TF Adam optimizer (%f)" % (learning_rate))
             # Sometimes Adam can benefit from the learning rate decay too, it can be visually noted when due to
-            # too large rmaining learning rate, at higher iterations picture could be transformed to a worse state
+            # too large remaining learning rate, at higher iterations picture could be transformed to a worse state
             if False:
                 LEARNING_RATE_INITIAL = learning_rate
                 LEARNING_DECAY_STEPS = 10
