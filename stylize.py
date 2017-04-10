@@ -119,7 +119,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 features = np.reshape(features, (-1, features.shape[3]))
                 
                 if distribution_loss:
-                    style_distr[i][layer] = (np.mean(features, axis=0), np.var(features, axis=0))
+                    style_distr[i][layer] = (np.mean(features, axis=0), np.std(features, axis=0))
                 
                 if style_features_type == STYLE_FEATURE_TYPES_GRAM:
                     # Gram matrix
@@ -171,14 +171,16 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
 
                 if distribution_loss:
                     print("Style Layer: %s" % (style_layer))
-                
+
+                    EPS = 1e-5
+
                     style_target_distr = style_distr[i][style_layer]
-                    cur_distr = (tf.nn.moments(feats, axes=[0]))
+                    cur_mean, cur_var = tf.nn.moments(feats, axes=[0])
+                    cur_distr = (cur_mean, tf.sqrt(tf.maximum(cur_var, tf.fill([1], EPS))))
                     
                     feats_shape = feats.get_shape()
                     distr_losses = []
                     
-                    EPS = 1e-5
                     feats_delta = feats - tf.add(tf.multiply(tf.div(style_target_distr[1], cur_distr[1] + tf.fill(cur_distr[1].get_shape(), EPS)), tf.subtract(feats, cur_distr[0])), style_target_distr[0])
                     style_distr_loss += style_distr_weight * tf.nn.l2_loss(feats_delta) / tf.cast(feats_shape[0] * feats_shape[1], common.get_dtype_tf())
                     
