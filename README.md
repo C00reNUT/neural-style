@@ -39,9 +39,9 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 * Adjustable pooling (use `--pooling`)
 * Color-preserving style transfer (a lot of various options, see `--preserve-colors` and additional script `luma_transfer.py`, details in [Color-preserving style transfer](#color-preserving-style-transfer) section)
 * More layers to extract content and style from
-* Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
+* Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]; details in [Perceptual convergence](#perceptual-convergence)
 * Different style feature extraction, in addition to Gram matrices calculation, see [Style feature extraction section](#style-feature-extraction)
-* Distribution remapping loss, based on the idea of histogram loss from [Stable and Controllable Neural Texture Synthesis and Style Transfer Using Histogram Losses][histloss_paper_arxiv]
+* Distribution remapping loss, based on the idea of histogram loss from [Stable and Controllable Neural Texture Synthesis and Style Transfer Using Histogram Losses][histloss_paper_arxiv]; details in [Perceptual convergence](#perceptual-convergence)
 
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
@@ -118,6 +118,23 @@ Generally, the mean activation alternative is ~20% faster, but (probably subject
 slightly worse results than the default Gram-based style loss. The full distribution matching is
 ~15% faster than Gram-based style loss, but also produces much closer results than just mean
 activation.
+
+## Perceptual convergence
+
+Naïve style transfer can sometimes give poor results, and this problem is well described in [Stable and Controllable Neural Texture Synthesis and Style Transfer Using Histogram Losses][histloss_paper_arxiv] paper. In the paper, it is suggested to introduce additional style loss function, based on histogram remapping of the feature activation maps. In this implementation of the style transfer, similar idea is used, but the key difference is that instead of more complicated histogram matching, simpler full distribution (mea, std dev) matching is used to remap feature map activations.
+
+In the examples below, style transfer of the "Gibraltar by Night" Ivan Aivazovsky was performed on the same cat image. The "Starry Night" transfers very easily to nearly any content image, so another style had to be chosen in order to illustrate the problem. Additionally, style transfer options were tweaked, so that naïve style transfer had obsious artefacts. All style transfer options are kept same for all the example images below (except activation shift and distribution loss, of course):
+
+<img src="examples/perc_convergence_naive.jpg" alt="Naïve" width="400" /> <img src="examples/perc_convergence_ashift.jpg" alt="Activation shift 100" width="400" />
+
+<img src="examples/perc_convergence_distrloss.jpg" alt="Distribution remapping loss" width="400" /> <img src="examples/perc_convergence_ashift_distrloss.jpg" alt="Both" width="400" />
+
+(**top-left**: naïve style transfer; **top-right**: naïve style transfer with activation shift 100; **bottom-left**: naïve style transfer with additional distribution remapping loss; **bottom-right**: both distribution remapping loss and activation shift)
+
+As it could be seen from these examples, naïve style transfer produces quite poor results for this set of parameters. Then, by adding activation shift alone, results could be improved substantially.
+Introducing distribution remapping loss **instead** of activation shift gives somewhat similar results to the activation shift alone, but what gives the best picture is a combination of both the activation shift and the distribution remapping loss added to the style transfer.
+
+Performance-wise, however, activation shift has nearly no overhead, while additional distribution remapping loss could add another 10%-15% to style transfer time. This example of transferring Aivazovsky's style was a particularly complex one, in most cases activation shift is enough; so it is advised to use activation shift by default, and in certain cases additionally enable distribution remapping loss.
 
 ## Extras
 
