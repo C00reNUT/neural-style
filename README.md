@@ -41,6 +41,7 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 * More layers to extract content and style from
 * Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
 * Different style feature extraction, in addition to Gram matrices calculation, see [Style feature extraction section](#style-feature-extraction)
+* Distribution remapping loss, based on the idea of histogram loss from [Stable and Controllable Neural Texture Synthesis and Style Transfer Using Histogram Losses][histloss_paper_arxiv]
 
 Original (base) implementation of TF style transfer introduced styles blending.
 This implementation also has an option of switching between L-BFGS/CG/Adam optimizers.
@@ -103,7 +104,7 @@ Yet another way to match style would be to match not only mean activations, but 
 standard deviation of the feature maps. This is slightly slower than just mean activations, but
 significantly faster than Gram matrices matching, and the result is only slightly different from the latter.
 
-Further details on different style loss functions could be found in ["Demystifying Neural Style Transfer"][demyst_paper_arxiv].
+Further details on different style loss functions could be found in [Demystifying Neural Style Transfer][demyst_paper_arxiv].
 
 This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
 
@@ -275,6 +276,7 @@ Copyright (c) 2017 Andrey Voroshilov, 2015-2016 Anish Athalye. Released under GP
 [improv_paper_arxiv]: https://arxiv.org/abs/1605.04603
 [preserve_paper_arxiv]: https://arxiv.org/abs/1606.05897
 [demyst_paper_arxiv]: https://arxiv.org/abs/1701.01036
+[histloss_paper_arxiv]: https://arxiv.org/abs/1701.08893
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
 [ad]: https://en.wikipedia.org/wiki/Automatic_differentiation
