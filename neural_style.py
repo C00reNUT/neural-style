@@ -124,7 +124,10 @@ def main():
         
         out_distr_weight = ""
         if options.style_distr_weight != 0.0:
-            out_distr_weight = "_sdw%03d" % (int(options.style_distr_weight))
+            if options.style_distr_weight > 1e2:
+                out_distr_weight = "_sdw%02de2" % (int(options.style_distr_weight) // 100)
+            else:
+                out_distr_weight = "_sdw%03d" % (int(options.style_distr_weight))
         
         
         options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d%s_swe%02d_cwe%02d_as%03d_%s%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_distr_weight, out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, out_preserve, postfix)
