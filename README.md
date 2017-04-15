@@ -107,9 +107,9 @@ Further details on different style loss functions could be found in ["Demystifyi
 
 This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
 
-<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="350" /> <img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="350" />
+<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="400" /> <img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="400" />
 
-<img src="examples/vgg.jpg" alt="VGG19 Gram" width="350" />
+<img src="examples/vgg.jpg" alt="VGG19 Gram" width="400" />
 
 (**left**: mean activation map based style loss [1.25x]; **right**: (mean + std dev) activation map based style loss [1.2x]; **bottom**: Gram matrix based style loss [1.0x])
 
