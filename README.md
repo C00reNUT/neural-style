@@ -86,8 +86,7 @@ In order to select between backends, use `--network-type vgg` for VGG19 backend,
 
 Example pictures:
 
-<img src="examples/vgg.jpg" alt="VGG19" width="400" />
-<img src="examples/sqz.jpg" alt="SqueezeNet v1.1" width="400" />
+<img src="examples/vgg.jpg" alt="VGG19" width="400" /> <img src="examples/sqz.jpg" alt="SqueezeNet v1.1" width="400" />
 
 (**left**: VGG19; **right**: SqueezeNet v1.1)
 
@@ -108,8 +107,7 @@ Further details on different style loss functions could be found in ["Demystifyi
 
 This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
 
-<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="350" />
-<img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="350" />
+<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="350" /> <img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="350" />
 
 <img src="examples/vgg.jpg" alt="VGG19 Gram" width="350" />
 
@@ -143,8 +141,7 @@ by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below)
 
 <img src="examples/vgg.jpg" alt="Original" width="810" />
 
-<img src="examples/vgg_pcyuv.jpg" alt="YCbCr" width="400" />
-<img src="examples/vgg_pchsv.jpg" alt="HSV" width="400" />
+<img src="examples/vgg_pcyuv.jpg" alt="YCbCr" width="400" /> <img src="examples/vgg_pchsv.jpg" alt="HSV" width="400" />
 
 (**left**: YCbCr luma transfer; **right**: HSV Saturation+Value transfer)
 
@@ -206,8 +203,7 @@ useful.
 
 Example of different tweaks applied to the same content/style image pair (cat+"Starry Night"):
 
-<img src="examples/content_heavy.jpg" alt="Content-heavy" width="400" />
-<img src="examples/style_heavy.jpg" alt="Style-heavy" width="400" />
+<img src="examples/content_heavy.jpg" alt="Content-heavy" width="400" /> <img src="examples/style_heavy.jpg" alt="Style-heavy" width="400" />
 
 (**left**: content-heavy transfer; **right**: style-heavy transfer)
 
