@@ -95,19 +95,30 @@ Example pictures:
 
 By default, style loss function is calculated based on the Gram matrices of the layer activation maps,
 as it is described in the original paper. However there are alternative approaches, one of which was
-described by Justin Johnson ([jcjohnson](https://github.com/jcjohnson)) in one of the CS231n Stanford lectures. Instead of calculating
-2D Gram matrices, one can calculate 1D vector of mean across activation map, and then use that to
-calculate the style loss function.
+mentioned in various texture model papers, as well as described by Justin Johnson ([jcjohnson](https://github.com/jcjohnson))
+in one of the CS231n Stanford lectures. Instead of calculating 2D Gram matrices, one can calculate 1D
+vector of mean across activation map, and then use that to calculate the style loss function. This
+requires less calculation, although gives worse (or, rather, quite different) results.
+
+Yet another way to match style would be to match not only mean activations, but mean activations and
+standard deviation of the feature maps. This is slightly slower than just mean activations, but
+significantly faster than Gram matrices matching, and the result is only slightly different from the latter.
+
+Further details on different style loss functions could be found in ["Demystifying Neural Style Transfer"][demyst_paper_arxiv].
 
 This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
 
-<img src="examples/vgg.jpg" alt="VGG19 Gram" width="400" />
-<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="400" />
+<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="350" />
+<img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="350" />
 
-(**left**: Gram matrix based style loss; **right**: mean activation map based style loss)
+<img src="examples/vgg.jpg" alt="VGG19 Gram" width="350" />
 
-Generally, the mean activation alternative is ~20% faster, but (probably subjectively) produces slightly
-worse results than the default Gram-based style loss.
+(**left**: mean activation map based style loss 1.25x; **right**: (mean + std dev) activation map based style loss (1.2x); **bottom**: Gram matrix based style loss (1.0x);)
+
+Generally, the mean activation alternative is ~20% faster, but (probably subjectively) produces
+slightly worse results than the default Gram-based style loss. The full distribution matching is
+~15% faster than Gram-based style loss, but also produces much closer results than just mean
+activation.
 
 ## Extras
 
@@ -234,6 +245,7 @@ Copyright (c) 2017 Andrey Voroshilov, 2015-2016 Anish Athalye. Released under GP
 [paper_arxiv]: https://arxiv.org/abs/1508.06576
 [improv_paper_arxiv]: https://arxiv.org/abs/1605.04603
 [preserve_paper_arxiv]: https://arxiv.org/abs/1606.05897
+[demyst_paper_arxiv]: https://arxiv.org/abs/1701.01036
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
 [ad]: https://en.wikipedia.org/wiki/Automatic_differentiation
