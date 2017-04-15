@@ -58,10 +58,13 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     
     STYLE_FEATURE_TYPES_GRAM = 0
     STYLE_FEATURE_TYPES_MEAN = 1
+    STYLE_FEATURE_TYPES_DISTR = 2
 
     style_features_type = STYLE_FEATURE_TYPES_GRAM
     if style_feat_type == 'mean':
         style_features_type = STYLE_FEATURE_TYPES_MEAN
+    elif style_feat_type == 'distr':
+        style_features_type = STYLE_FEATURE_TYPES_DISTR
     
     CONTENT_LAYERS = net_module.get_content_layers()
     STYLE_LAYERS = net_module.get_style_layers()
@@ -130,6 +133,9 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                 elif style_features_type == STYLE_FEATURE_TYPES_MEAN:
                     # Averaging
                     style_features[i][layer] = np.mean(features, axis=0)# / features.size
+                elif style_features_type == STYLE_FEATURE_TYPES_DISTR:
+                    # Full distribution parameters loss
+                    style_features[i][layer] = (np.mean(features, axis=0), np.std(features, axis=0))
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
                 
@@ -196,6 +202,14 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                     style_target_features = style_features[i][style_layer]
                     style_current_features = tf.reduce_mean(feats, axis=0)
                     style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(style_current_features - style_target_features))
+                elif style_features_type == STYLE_FEATURE_TYPES_DISTR:
+                    # Full distribution parameters loss
+                    style_target_features = style_features[i][style_layer]
+                    cur_mean, cur_var = tf.nn.moments(feats, axes=[0])
+                    
+                    EPS = 1e-5
+                    style_current_features = (cur_mean, tf.sqrt(tf.maximum(cur_var, tf.fill([1], EPS))))
+                    style_losses.append(style_layers_weights[style_layer] * 2 * (tf.nn.l2_loss(style_current_features[0] - style_target_features[0]) + tf.nn.l2_loss(style_current_features[1] - style_target_features[1])))
 
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
             if distribution_loss:

@@ -60,7 +60,7 @@ def build_parser():
     ps.add_argument('--style-layer-weight-exp', dest='style_layer_weight_exp', type=float, metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP,
                                             help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)')
     ps.add_argument('--style-blend-weights', dest='style_blend_weights', type=float, help='style blending weights', nargs='+', metavar='STYLE_BLEND_WEIGHT')
-    ps.add_argument('--style-feat-type',    dest='style_feat_type', help='style feature type, \'gram\' or \'mean\' (default %(default)s)', metavar='STYLE_FEATURE_TYPE', default=STYLE_FEATURE_TYPE)
+    ps.add_argument('--style-feat-type',    dest='style_feat_type', help='style feature type, \'gram\', \'mean\' or \'distr\' (default %(default)s)', metavar='STYLE_FEATURE_TYPE', default=STYLE_FEATURE_TYPE)
     ps.add_argument('--tv-weight',          dest='tv_weight', type=float, help='total variation regularization weight (default %(default)s)', metavar='TV_WEIGHT', default=TV_WEIGHT)
     ps.add_argument('--initial',            dest='initial', help='initial image', metavar='INITIAL')
     ps.add_argument('--initial-noiseblend', dest='initial_noiseblend', type=float, metavar='INITIAL_NOISEBLEND', default=INITIAL_NOISEBLEND,
