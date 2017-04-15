@@ -37,7 +37,7 @@ Some improvements of this implementation over vanilla ["A Neural Algorithm of Ar
 * Default VGG network topology as well as smaller SqueezeNet v1.1 backend (use `--network-type` to switch), see details in [SqueezeNet section](#squeezenet) below
 * Adjustable inter-layer weights (see `--style-layer-weight-exp`)
 * Adjustable pooling (use `--pooling`)
-* Color-preserving style transfer (either in YUV or HSV spaces, see `--preserve-colors` and additional script `luma_transfer.py`, details in [Color-preserving style transfer](#color-preserving-style-transfer) section)
+* Color-preserving style transfer (a lot of various options, see `--preserve-colors` and additional script `luma_transfer.py`, details in [Color-preserving style transfer](#color-preserving-style-transfer) section)
 * More layers to extract content and style from
 * Activation shift (see `--ashift`), comes from [Improving the Neural Algorithm of Artistic Style][improv_paper_arxiv]
 * Different style feature extraction, in addition to Gram matrices calculation, see [Style feature extraction section](#style-feature-extraction)
@@ -107,11 +107,11 @@ Further details on different style loss functions could be found in ["Demystifyi
 
 This is an example of how would that alternative extraction look like, in comparison (both use VGG backends):
 
-<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="350" /> <img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="350" />
+<img src="examples/vgg_mean.jpg" alt="VGG19 Mean" width="400" /> <img src="examples/vgg_distr.jpg" alt="VGG19 Full distribution" width="400" />
 
-<img src="examples/vgg.jpg" alt="VGG19 Gram" width="350" />
+<img src="examples/vgg.jpg" alt="VGG19 Gram" width="400" />
 
-(**left**: mean activation map based style loss 1.25x; **right**: (mean + std dev) activation map based style loss (1.2x); **bottom**: Gram matrix based style loss (1.0x);)
+(**left**: mean activation map based style loss [1.25x]; **right**: (mean + std dev) activation map based style loss [1.2x]; **bottom**: Gram matrix based style loss [1.0x])
 
 Generally, the mean activation alternative is ~20% faster, but (probably subjectively) produces
 slightly worse results than the default Gram-based style loss. The full distribution matching is
@@ -146,6 +146,39 @@ by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below)
 (**left**: YCbCr luma transfer; **right**: HSV Saturation+Value transfer)
 
 As can be seen in the example, the YCbCr much more resembles the original photo, but HSV keeps more from the style transfer itself.
+
+### Color transfer with strong stylistic distortions
+
+Here's an example, where content was deliberately omitted during the style transfer, and the result of YCbCr post-stylize color transfer:
+
+<img src="examples/colortransfer_no.jpg" alt="Original contentless" width="400" /> <img src="examples/colortransfer_yuv.jpg" alt="YCbCr" width="400" />
+
+(**left**: original contentless style transfer; **right**: YCbCr color transfer)
+
+It is easily noticeable, that straightforward post-stylize color transfer in any space causes the original object to show up, even though the stylized image had no resemblanse with it. This is artificial example, but in the real world style transfercould introduce distortions that will create discrepancies during the color transfer. There are couple of ways to fix this.
+
+First is to match color distribution, rather than transfer colors pixel-by-pixel - and two basic ways of doing so are the distribution matching, and the histogram matching. The distribution matching is simple linear color remapping, where source image is first offset by the mean color (to center color distribution around 0), then scaled by the relation of std devs of target color distribuiotn to ource color distribuiotn, and then shifted from 0 to the mean target color distribution.
+Histogram matching is more complicated problem which includes mapping to the cumulative distribution, and then back from it, using histograms of both source and target images. However, practically, much simpler distribution matching may work out quite well.
+
+Below are examples of post-stylize histogram matching in various color spaces:
+
+<img src="examples/colortransfer_histrgb.jpg" alt="Histogram matching in RGB" width="400" /> <img src="examples/colortransfer_histhsv.jpg" alt="Histogram matching in HSV" width="400" />
+
+(**left**: histogram matching in RGB space; **right**: histogram matching in HSV space)
+
+### Color transfer to the style image
+
+And the second approach is to transfer color to the style image(s) prior to the style transfer. This gives perceptually the best results, and copes with stylistic distortionns naturally.
+
+Below are couple examples of **style** images with color transferred prior to the style transfer:
+
+<img src="examples/style_colortransfer_histrgb.jpg" alt="Histogram matching in RGB" width="400" /> <img src="examples/style_colortransfer_histhsv.jpg" alt="Histogram matching in HSV" width="400" />
+
+<img src="examples/style_colortransfer_hsv.jpg" alt="Histogram matching in HSV" width="400" />
+
+(**left**: histogram matchin in RGB space; **right**: histogram matching in HSV space; **bottom**: straightforward HSV color transfer, with minimal saturation selection)
+
+On the last example, content is present in the style image, but it doesn't interfere with the style transfer in any way, according to our observations.
 
 ### Collage building
 
