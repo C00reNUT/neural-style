@@ -63,9 +63,7 @@ Then, the output - smallest stylized image - is upscaled, blended in with some w
 Example:
 
 <img src="examples/h3_0_0150x0206.jpg" alt="H-level 0" />
-
 <img src="examples/h3_1_0300x0412.jpg" alt="H-level 1" />
-
 <img src="examples/h3_2_0825x0600.jpg" alt="H-level 2, final image" />
 
 ## SqueezeNet
@@ -137,7 +135,6 @@ transfer options are kept same for all the example images below (except activati
 distribution loss, of course):
 
 <img src="examples/perc_convergence_naive.jpg" alt="Naïve" width="400" /> <img src="examples/perc_convergence_ashift.jpg" alt="Activation shift 100" width="400" />
-
 <img src="examples/perc_convergence_distrloss.jpg" alt="Distribution remapping loss" width="400" /> <img src="examples/perc_convergence_ashift_distrloss.jpg" alt="Both" width="400" />
 
 (**top-left**: naïve style transfer; **top-right**: naïve style transfer with activation shift 100; **bottom-left**: naïve style transfer with additional distribution remapping loss; **bottom-right**: both distribution remapping loss and activation shift)
@@ -172,7 +169,6 @@ style transfer run if you already have stylized images). In standalone script, y
 by specifying either `--mode yuv` or `--mode hsv`. Supports collages (see below).
 
 <img src="examples/vgg.jpg" alt="Original" width="810" />
-
 <img src="examples/vgg_pcyuv.jpg" alt="YCbCr" width="400" /> <img src="examples/vgg_pchsv.jpg" alt="HSV" width="400" />
 
 (**left**: YCbCr luma transfer; **right**: HSV Saturation+Value transfer)
