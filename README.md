@@ -111,7 +111,7 @@ This is an example of how would that alternative extraction look like, in compar
 
 <img src="examples/vgg.jpg" alt="VGG19 Gram" width="350" />
 
-(**left**: mean activation map based style loss 1.25x; **right**: (mean + std dev) activation map based style loss (1.2x); **bottom**: Gram matrix based style loss (1.0x);)
+(**left**: mean activation map based style loss [1.25x]; **right**: (mean + std dev) activation map based style loss [1.2x]; **bottom**: Gram matrix based style loss [1.0x])
 
 Generally, the mean activation alternative is ~20% faster, but (probably subjectively) produces
 slightly worse results than the default Gram-based style loss. The full distribution matching is
