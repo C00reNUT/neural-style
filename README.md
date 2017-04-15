@@ -204,13 +204,12 @@ And the second approach is to transfer color to the style image(s) prior to the 
 
 Below are couple examples of **style** images with color transferred prior to the style transfer:
 
+<img src="examples/style_StarryNight.jpg" alt="Original 'Starry Night'" width="400" /> <img src="examples/style_colortransfer_hsv.jpg" alt="Histogram matching in HSV" width="400" />
 <img src="examples/style_colortransfer_histrgb.jpg" alt="Histogram matching in RGB" width="400" /> <img src="examples/style_colortransfer_histhsv.jpg" alt="Histogram matching in HSV" width="400" />
 
-<img src="examples/style_colortransfer_hsv.jpg" alt="Histogram matching in HSV" width="400" />
+(**top-left**: original "Starry Night" by Vincent Van Gogh; **top-right**: straightforward HSV color transfer, with minimal saturation selection; **bottom-left**: histogram matching in RGB space; **bottom-right**: histogram matching in HSV space)
 
-(**left**: histogram matchin in RGB space; **right**: histogram matching in HSV space; **bottom**: straightforward HSV color transfer, with minimal saturation selection)
-
-On the last example, content is present in the style image, but it doesn't interfere with the style transfer in any way, according to our observations.
+On the straightforward HSV color transfer example, content is present in the style image, but it doesn't interfere with the style transfer in any way, according to our observations.
 
 ### Collage building
 
