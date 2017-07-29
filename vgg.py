@@ -29,7 +29,8 @@ def load_net(data_path):
     if data_path is None:
         data_path = 'imagenet-vgg-verydeep-19.mat'
     if not os.path.isfile(data_path):
-        parser.error("Network %s does not exist. (Did you forget to download it?)" % data_path)
+        print("Network %s does not exist. (Did you forget to download it?)" % data_path)
+        return None, None
 
     data = scipy.io.loadmat(data_path)
     mean = data['normalization'][0][0][0]

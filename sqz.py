@@ -103,7 +103,8 @@ def load_net(data_path):
     if data_path is None:
         data_path = 'sqz_notop.mat'
     if not os.path.isfile(data_path):
-        parser.error("Network %s does not exist. (Did you forget to download it?)" % data_path)
+        print("Network %s does not exist. (Did you forget to download it?)" % data_path)
+        return None, None
 
     weights_raw = scipy.io.loadmat(data_path)
     

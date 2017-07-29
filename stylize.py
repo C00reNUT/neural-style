@@ -10,6 +10,7 @@ import time
 from tensorflow.contrib.opt.python.training import external_optimizer
 
 from sys import stderr
+import sys
 
 from PIL import Image
 
@@ -70,6 +71,9 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
     STYLE_LAYERS = net_module.get_style_layers()
     
     vgg_weights, vgg_mean_pixel = net_module.load_net(network_file)
+    if vgg_weights == None:
+        print("Failed to load network\n\n")
+        sys.exit(0)
     
     # calculate content layer weights
     clw = (content_weight_blend, 1.0 - content_weight_blend)
