@@ -1,6 +1,6 @@
 # neural-style
 
-An implementation of [neural style][paper] in TensorFlow.
+An implementation of [neural style][paper] in TensorFlow. Windows instructions to set up the environment are available in [RUN_WIN.md](RUN_WIN.md).
 
 This implementation is a lot simpler than a lot of the other ones out there,
 thanks to TensorFlow's really nice API and [automatic differentiation][ad].
