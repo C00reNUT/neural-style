@@ -6,27 +6,27 @@ This instruction should theoretically allow you to run the style transfer even o
 
   1. Download and install latest CUDA from the NVIDIA developer website
   2. Download and install latest CuDNN package from the NVIDIA website (checked working fine w/ CuDNN v5.1, throwing errors w/ CuDNN v6)
-    - installation could mean just copying over libs/binaries to the CUDA directory
+     - installation could mean just copying over libs/binaries to the CUDA directory
   3. Downlaod and install Anaconda3
     https://www.continuum.io/downloads#windows
     (select "Add Anaconda3 to PATH environment variable despite it is not recommended, otherwise you'll get a lot of troubles)
   4. Then, in cmd (install necessary packages when prompted):
-    ```
-    conda create --name tf35-gpu python=3.5
-    activate tf35-gpu
-    conda install jupyter
-    conda install scipy
-    pip install tensorflow-gpu
-    conda install pillow
-    ```
+     ```
+     conda create --name tf35-gpu python=3.5
+     activate tf35-gpu
+     conda install jupyter
+     conda install scipy
+     pip install tensorflow-gpu
+     conda install pillow
+     ```
   5. Sync https://github.com/avoroshilov/neural-style.git
   6. Download VGG network weights, following the link in the README.md (http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat)
     Place it into the repository root (where stylize.py is located)
   7. Run the style transfer!
-    Example command line:
-    ```
-    python neural_style.py --content cat.jpg --styles starry_night.jpg --network-type vgg --initial-noiseblend 0.1 --style-layer-weight-exp 0.5 --style-weight 1e3 --content-weight-blend 0.1 --pooling avg --iterations 200 --optim lbfgs --max-hierarchy 3 --ashift 150 --tv-weight 2  --style-distr-weight 1.6e2
-    ```
+     Example command line:
+     ```
+     python neural_style.py --content cat.jpg --styles starry_night.jpg --network-type vgg --initial-noiseblend 0.1 --style-layer-weight-exp 0.5 --style-weight 1e3 --content-weight-blend 0.1 --pooling avg --iterations 200 --optim lbfgs --max-hierarchy 3 --ashift 150 --tv-weight 2  --style-distr-weight 1.6e2
+     ```
 
 ## Troubleshooting:
 
