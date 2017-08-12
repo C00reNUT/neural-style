@@ -20,11 +20,18 @@ def imsave(path, img):
 EXTENSIONS = [ '.jpg', '.bmp', '.png', '.tga' ]
     
 def trim_starting_filename(str):
+    min_ext_pos = len(str)
+    min_ext_idx = -1
     for i in range(len(EXTENSIONS)):
         filename_ext = str.find(EXTENSIONS[i])
-        if filename_ext != -1:
-            filename = str[0:filename_ext + len(EXTENSIONS[i])]
-            break
+        if filename_ext != -1 and filename_ext < min_ext_pos:
+            min_ext_pos = filename_ext
+            min_ext_idx = i
+
+    filename = str
+    if min_ext_idx != -1:
+        filename = str[0:min_ext_pos + len(EXTENSIONS[min_ext_idx])]
+
     # move pointer to after the filename
     str = str[len(filename):]
     return filename, str
