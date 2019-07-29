@@ -3,4 +3,8 @@ env/
 .idea
 __pycache__
 *.pyc
-*.jpg
+contents/**/*.*
+styles/**/*.*
+/*.jpg
+/*.jpeg
+/*.png

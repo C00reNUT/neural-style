@@ -296,7 +296,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
             use_scipy_optimizer = True
             if optimizer == 'cg':
                 print("Using SciPy CG optimizer")
-                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='CG', callback=iter_callback, options=
+                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='CG', options=
                     {
                         'disp': None,
                         'gtol': 1e-05,
@@ -305,7 +305,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                     })
             else:
                 print("Using SciPy L-BFGS optimizer")
-                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='L-BFGS-B', callback=iter_callback, options=
+                scipy_optimizer = external_optimizer.ScipyOptimizerInterface(loss, method='L-BFGS-B', options=
                     {
                         'disp': None,
                         'maxls': 20,
@@ -339,7 +339,7 @@ def stylize(network_file, network_type, initial, initial_noiseblend, content, st
                     train_step.run()
                     iter_callback()
                 else:
-                    scipy_optimizer.minimize(sess)                
+                    scipy_optimizer.minimize(sess, step_callback=iter_callback)
 
                 last_step = (i == iterations - 1)
                 if last_step or (print_iterations and i % print_iterations == 0):
