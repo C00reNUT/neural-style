@@ -4,7 +4,6 @@
 import os
 
 import numpy as np
-import scipy.misc
 
 from stylize import stylize
 import common
@@ -141,7 +140,7 @@ def main():
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
-        content_image = scipy.misc.imresize(content_image, new_shape)
+        content_image = comimg.imresize(content_image, new_shape)
         
     # TODO: remove this probably, since double doswnscale could affect quality
     #   however, it could save some time if the style image is a lot bigger than content
@@ -150,7 +149,7 @@ def main():
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
+        style_images[i] = comimg.imresize(style_images[i], style_scale *
                 target_shape[1] / style_images[i].shape[1])
 
     style_blend_weights = options.style_blend_weights
@@ -217,8 +216,8 @@ def main():
         
         # If we only do 1 hierarchy step (e.g. no multgrid) - we don't need to resize content/initial
         if options.max_hierarchy > 1:
-            h_initial_guess = scipy.misc.imresize(h_initial_guess, (dim[0], dim[1], num_channels))
-            h_content = scipy.misc.imresize(content_image, (dim[0], dim[1], num_channels))
+            h_initial_guess = comimg.imresize(h_initial_guess, (dim[0], dim[1], num_channels))
+            h_content = comimg.imresize(content_image, (dim[0], dim[1], num_channels))
         
         coeff = 0.9
         h_initial_guess = h_initial_guess * coeff + h_content * (1.0 - coeff)
@@ -229,7 +228,7 @@ def main():
             style_scale = STYLE_SCALE
             if options.style_scales is not None:
                 style_scale = options.style_scales[i]
-            h_style_images.append( scipy.misc.imresize(style_images[i], style_scale *
+            h_style_images.append( comimg.imresize(style_images[i], style_scale *
                     target_shape[1] / style_images[i].shape[1]) )
         
         h_preserve_colors_coeff = 0.0

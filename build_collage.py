@@ -40,7 +40,7 @@ def build_collage(result_image, content_image, style_image, mode='crop'):
     #####################################################
     content_size = (int(result_size[0] * 0.5), int(result_size[1] * 0.5))
     # X and Y are swapped again
-    content_image = scipy.misc.imresize(content_image, (content_size[1], content_size[0]))
+    content_image = comimg.imresize(content_image, (content_size[1], content_size[0]))
     collage.paste(Image.fromarray(content_image), (0, result_size[1]))
 
     # Style
@@ -76,7 +76,7 @@ def build_collage(result_image, content_image, style_image, mode='crop'):
         style_final_size = [int(dim * scale) for dim in style_size]
         
         # X and Y are swapped again
-        style_image = scipy.misc.imresize(style_image, (style_final_size[1], style_final_size[0]))
+        style_image = comimg.imresize(style_image, (style_final_size[1], style_final_size[0]))
         collage.paste(Image.fromarray(style_image), (content_size[0], result_size[1]))
         suffix = '_combs'
     else:
@@ -94,7 +94,7 @@ def build_collage(result_image, content_image, style_image, mode='crop'):
         style_final_size = [int(dim * scale) for dim in style_size]
         
         # X and Y are swapped again
-        style_image = scipy.misc.imresize(style_image, (style_final_size[1], style_final_size[0]))
+        style_image = comimg.imresize(style_image, (style_final_size[1], style_final_size[0]))
         style_size_new = (style_image.shape[1], style_image.shape[0])
        
         # Crop parts of MAXIMAL dimension
