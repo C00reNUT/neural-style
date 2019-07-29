@@ -81,8 +81,8 @@ def build_parser():
     ps.add_argument('--beta2',              dest='beta2', type=float, help='Adam: beta2 parameter (default %(default)s)', metavar='BETA2', default=BETA2)
     ps.add_argument('--eps',                dest='epsilon', type=float, help='Adam: epsilon parameter (default %(default)s)', metavar='EPSILON', default=EPSILON)
 
-    
-    
+
+
     return ps
 
 def main():
@@ -101,11 +101,11 @@ def main():
     if options.output is None:
         # For now, only works with the first style
         style_filename = style_filenames[0]
-        
+
         out_stylewe = int(options.style_layer_weight_exp * 10)
         out_ashift = int(options.ashift)
         out_contentwe = int(options.content_weight_blend * 10)
-        
+
         postfix = ""
         if options.out_postfix is not None:
             postfix = "_" + options.out_postfix
@@ -113,24 +113,24 @@ def main():
         out_sft = ""
         if options.style_feat_type != 'gram':
             out_sft = "_" + options.style_feat_type
-        
+
         out_preserve = ""
         if options.preserve_colors != 'none':
             if options.preserve_colors == 'before':
                 out_preserve = "_bpc"
             else:
                 out_preserve = "_pc"
-        
+
         out_distr_weight = ""
         if options.style_distr_weight != 0.0:
             if options.style_distr_weight > 1e2:
                 out_distr_weight = "_sdw%02de2" % (int(options.style_distr_weight) // 100)
             else:
                 out_distr_weight = "_sdw%03d" % (int(options.style_distr_weight))
-        
-        
+
+
         options.output = "t_%s_%s_%s%04d_h%d_p%s_sw%05d%s_swe%02d_cwe%02d_as%03d_%s%s%s%s.jpg" % (content_filename, style_filename, options.optimizer, options.iterations, options.max_hierarchy, options.pooling, int(options.style_weight), out_distr_weight, out_stylewe, out_contentwe, out_ashift, options.network_type, out_sft, out_preserve, postfix)
-        
+
         print("Using auto-generated output filename: %s" % (options.output))
 
     content_image = comimg.imread(options.content).astype(common.get_dtype_np())
@@ -141,7 +141,7 @@ def main():
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
         content_image = comimg.imresize(content_image, new_shape)
-        
+
     # TODO: remove this probably, since double doswnscale could affect quality
     #   however, it could save some time if the style image is a lot bigger than content
     target_shape = content_image.shape
@@ -169,13 +169,13 @@ def main():
     print("\n>>> OUTPUT: %s\n" % (options.output))
 
     total_time = time.time()
-    
+
     hierarchy_counter = 1
 
     ITER_DIVIDER_BASE = 1.5
     iter_divider = ITER_DIVIDER_BASE
     iter_hierarchy = [ options.iterations ]
-    
+
     dim_first = (content_image.shape[0], content_image.shape[1])
     dim_hierarchy = [ dim_first ]
     dim_divider = 2
@@ -184,9 +184,9 @@ def main():
         dim_new = tuple(x // dim_divider for x in dim_first)
         dim_hierarchy.append(dim_new)
         iter_hierarchy.append(int(options.iterations / iter_divider))
-        
+
         dim_min = dim_new[0] if dim_new[0] < dim_new[1] else dim_new[1]
-        
+
         dim_divider = dim_divider * 2
         iter_divider = iter_divider * ITER_DIVIDER_BASE
         hierarchy_counter = hierarchy_counter + 1
@@ -195,33 +195,33 @@ def main():
     h_initial_guess = content_image
 
     h_content = content_image
-    
+
     # If noiseblend is not specified, it should be 0.0
     if options.initial_noiseblend is None:
         options.initial_noiseblend = 0.0
-    
+
     hierarchy_steps = len(dim_hierarchy)
     for idx in reversed(range(hierarchy_steps)):
         dim = dim_hierarchy[idx]
         iter = iter_hierarchy[idx]
-        
+
         # There is no point of getting below 25 iterations
         if hierarchy_steps > 1 and iter < 25:
             iter = 25
-        
+
         is_last_hierarchy_level = (idx == 0)
-        
+
         # x == dim[1], y == dim[0], meh
         print("Processing: %s / %d" % ((dim[1], dim[0]),iter))
-        
+
         # If we only do 1 hierarchy step (e.g. no multgrid) - we don't need to resize content/initial
         if options.max_hierarchy > 1:
             h_initial_guess = comimg.imresize(h_initial_guess, (dim[0], dim[1], num_channels))
             h_content = comimg.imresize(content_image, (dim[0], dim[1], num_channels))
-        
+
         coeff = 0.9
         h_initial_guess = h_initial_guess * coeff + h_content * (1.0 - coeff)
-        
+
         target_shape = h_content.shape
         h_style_images = []
         for i in range(len(style_images)):
@@ -230,7 +230,7 @@ def main():
                 style_scale = options.style_scales[i]
             h_style_images.append( comimg.imresize(style_images[i], style_scale *
                     target_shape[1] / style_images[i].shape[1]) )
-        
+
         h_preserve_colors_coeff = 0.0
         if is_last_hierarchy_level:
             if options.preserve_colors == 'all' or options.preserve_colors == 'out':
@@ -244,9 +244,9 @@ def main():
                 SMALLEST_STEP_PC = 1.0
                 BIGGEST_STEP_PC = 0.3
                 h_preserve_colors_coeff = BIGGEST_STEP_PC * h_preserve_alpha + SMALLEST_STEP_PC * (1.0 - h_preserve_alpha)
-        
+
         #print("Preserve colors coeff: %f" % (h_preserve_colors_coeff))
-        
+
         for iteration, image in stylize(
             network_file=options.network_file,
             network_type=options.network_type,
@@ -285,7 +285,7 @@ def main():
                     comimg.imsave(checkpoint_filename, combined_rgb)
             else:
                 h_initial_guess = image
-                    
+
         if is_last_hierarchy_level:
             if options.no_collage is None or options.no_collage == False:
                 # For now, only works with the first style
@@ -295,7 +295,7 @@ def main():
                                         np.clip(style_images[0], 0, 255).astype(np.uint8),
                                         'crop'
                                         )
-            
+
             # Last hierarchy level, we have the final output
             comimg.imsave(options.output, combined_rgb)
         else:
@@ -309,17 +309,17 @@ def main():
         if False:
             h_content_name = "h_content_%04dx%04d.jpg" % (dim[0], dim[1])
             comimg.imsave(h_content_name, h_content)
-        
+
         # True to save scaled style images
         if False:
             for i in range(len(h_style_images)):
                 h_style_name = "h_style%d_%04dx%04d.jpg" % (i, dim[0], dim[1])
                 comimg.imsave(h_style_name, h_style_images[i])
-      
+
 
     #if options.output:
     #    comimg.imsave(options.output, h_initial_guess)
-      
+
     print("Total time: %fs" % (time.time() - total_time))
 
 if __name__ == '__main__':
