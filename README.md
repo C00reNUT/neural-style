@@ -277,6 +277,14 @@ Example of different tweaks applied to the same content/style image pair (cat+"S
 * [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network-file` option.<br />
 (Not required if SqueezeNet v1.1 backend is used for style transfer).
 
+**Updated**: new version of this code (July 29, 2019) was updated and tested against:
+* CUDA: 10.0.130
+* cuDNN: 7.6.2.24 for CUDA 10.0
+* tensorflow-gpu: 1.14.0
+* numpy: 1.17.0
+* scipy: 1.3.0
+* pillow: 6.1.0
+
 ## Citation
 
 If you use this implementation in your work, please cite the following:
